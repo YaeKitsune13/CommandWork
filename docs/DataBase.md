@@ -17,6 +17,7 @@
 - fileName(text)
 - image
 - aproved(boolean)
+- comments(2many)
 - date
 
 3. music_genre
@@ -45,3 +46,8 @@
 7. playlist2manymusic
 - playlist_id
 - music_id
+
+8. comments(2many)
+- music_id
+- user_id
+- text
