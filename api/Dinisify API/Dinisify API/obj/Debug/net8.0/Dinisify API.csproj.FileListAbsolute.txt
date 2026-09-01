@@ -1,0 +1,34 @@
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/appsettings.Development.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/appsettings.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Dinisify API
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Dinisify API.deps.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Dinisify API.runtimeconfig.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Dinisify API.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Dinisify API.pdb
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.AspNetCore.OpenApi.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.OpenApi.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Swashbuckle.AspNetCore.Swagger.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.csproj.AssemblyReference.cache
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.GeneratedMSBuildEditorConfig.editorconfig
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.AssemblyInfoInputs.cache
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.AssemblyInfo.cs
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.csproj.CoreCompileInputs.cache
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.MvcApplicationPartsAssemblyInfo.cs
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.MvcApplicationPartsAssemblyInfo.cache
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.sourcelink.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets.build.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets.development.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets/msbuild.Dinisify API.Microsoft.AspNetCore.StaticWebAssets.props
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets/msbuild.build.Dinisify API.props
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.Dinisify API.props
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.Dinisify API.props
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets.pack.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/scopedcss/bundle/Dinisify API.styles.css
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify.D74A9A78.Up2Date
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/refint/Dinisify API.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.pdb
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.genruntimeconfig.cache
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/ref/Dinisify API.dll
