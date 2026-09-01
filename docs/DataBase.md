@@ -1,53 +1,62 @@
-1. user
+# Database Schema
+
+## 1. user
 - id
 - email
 - phone
-- password
+- password_hash
 - image
 - nickname
 - privacy
-- like(2many)
-- listened(2many)
+- likes (2many → user_likes)
+- listened (2many → user_listened)
 
-2. music
+## 2. music
 - id
 - name
-- ganres(2many)
-- avtor
-- fileName(text)
+- genres (2many → music_genres)
+- author (text)
+- file_url
 - image
-- aproved(boolean)
-- comments(2many)
+- approved (boolean)
+- comments (2many → comments)
 - date
 
-3. music_genre
+## 3. music_genre
 - id
 - name
 
-4. playlist
+## 4. playlist
 - id
 - name
-- music(2many)
+- user_id (FK → user)
+- music (2many → playlist_tracks)
 - privacy
 - description
 
-4. likes2manyuser
+## 5. user_likes
 - user_id
 - music_id
+- created_at
 
-5. listened2manyuser
+## 6. user_listened
+- id
 - user_id
 - music_id
+- listened_at
 
-6. genre2manymusic
+## 7. music_genres
 - music_id
 - genre_id
 
-7. playlist2manymusic
+## 8. playlist_tracks
 - playlist_id
 - music_id
+- position
 
-8. comments(2many)
+## 9. comments
+- id
 - music_id
 - user_id
 - text
+- created_at
