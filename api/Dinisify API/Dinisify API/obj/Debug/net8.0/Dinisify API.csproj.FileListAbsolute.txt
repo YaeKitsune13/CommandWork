@@ -20,11 +20,6 @@
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.sourcelink.json
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets.build.json
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets.development.json
-/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets/msbuild.Dinisify API.Microsoft.AspNetCore.StaticWebAssets.props
-/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets/msbuild.build.Dinisify API.props
-/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets/msbuild.buildMultiTargeting.Dinisify API.props
-/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets/msbuild.buildTransitive.Dinisify API.props
-/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets.pack.json
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/scopedcss/bundle/Dinisify API.styles.css
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify.D74A9A78.Up2Date
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.dll
@@ -32,3 +27,91 @@
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.pdb
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/Dinisify API.genruntimeconfig.cache
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/ref/Dinisify API.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Dinisify API.staticwebassets.endpoints.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/rpswa.dswa.cache.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/rjimswa.dswa.cache.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/rjsmrazor.dswa.cache.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/rjsmcshtml.dswa.cache.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets.build.json.cache
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/staticwebassets.build.endpoints.json
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/obj/Debug/net8.0/swae.build.ex.cache
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Humanizer.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.Bcl.AsyncInterfaces.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.CodeAnalysis.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.CodeAnalysis.CSharp.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.CodeAnalysis.Workspaces.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Abstractions.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Design.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.EntityFrameworkCore.Relational.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.Extensions.Caching.Memory.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.Extensions.DependencyModel.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.Extensions.Logging.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Mono.TextTemplating.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/System.CodeDom.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/System.Composition.AttributedModel.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/System.Composition.Convention.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/System.Composition.Hosting.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/System.Composition.Runtime.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/System.Composition.TypedParts.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/fr/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/it/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ja/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ko/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/pl/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/pt-BR/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ru/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/fr/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/it/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ja/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ko/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/pl/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ru/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/fr/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/it/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ja/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ko/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/pl/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/pt-BR/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ru/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/cs/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/de/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/es/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/fr/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/it/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ja/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ko/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/pl/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/pt-BR/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/ru/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/tr/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/zh-Hans/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.resources.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/FirebirdSql.Data.FirebirdClient.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/FirebirdSql.EntityFrameworkCore.Firebird.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/MySqlConnector.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Pomelo.EntityFrameworkCore.MySql.dll

@@ -1,0 +1,49 @@
+## Папки сборки
+bin/
+obj/
+out/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Rider / JetBrains
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+
+## NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+## Публикация
+publish/
+*.pubxml
+*.pubxml.user
+
+## Логи и временные файлы
+*.log
+*.tmp
+logs/
+
+## Секреты / конфиги с чувствительными данными
+appsettings.Development.json
+appsettings.*.local.json
+*.env
+.env
+
+## Тестовые результаты
+TestResults/
+*.trx
+
+## Настройки пользователя ОС
+.DS_Store
+Thumbs.db
