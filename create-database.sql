@@ -1,4 +1,5 @@
-
+create database if not exists coop_project;
+use coop_project;
 -- MySQL 8.0+
 
 SET NAMES utf8mb4;
