@@ -1,4 +1,5 @@
-
+create database if not exists coop_project;
+use coop_project;
 -- MySQL 8.0+
 
 SET NAMES utf8mb4;
@@ -171,6 +172,9 @@ CREATE TABLE `playlist_collaborators` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 11. follows  (подписки user -> user)
+-- Примечание: CHECK-constraint на follower_id <> following_id убран,
+-- т.к. MySQL 8 запрещает CHECK на колонке, участвующей в FK с CASCADE
+-- (ошибка 3823). Запрет самоподписки реализован через триггеры ниже.
 
 DROP TABLE IF EXISTS `follows`;
 CREATE TABLE `follows` (
@@ -184,8 +188,7 @@ CREATE TABLE `follows` (
     CONSTRAINT `fk_follows_following`
         FOREIGN KEY (`following_id`) REFERENCES `user` (`id`)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    INDEX `idx_follows_following` (`following_id`),
-    CONSTRAINT `chk_follows_not_self` CHECK (`follower_id` <> `following_id`)
+    INDEX `idx_follows_following` (`following_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 12. comments
@@ -244,3 +247,30 @@ CREATE TABLE `password_reset_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+DROP TRIGGER IF EXISTS `trg_follows_no_self_insert`;
+DROP TRIGGER IF EXISTS `trg_follows_no_self_update`;
+
+DELIMITER $$
+
+CREATE TRIGGER `trg_follows_no_self_insert`
+BEFORE INSERT ON `follows`
+FOR EACH ROW
+BEGIN
+    IF NEW.follower_id = NEW.following_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Пользователь не может подписаться сам на себя';
+    END IF;
+END$$
+
+CREATE TRIGGER `trg_follows_no_self_update`
+BEFORE UPDATE ON `follows`
+FOR EACH ROW
+BEGIN
+    IF NEW.follower_id = NEW.following_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Пользователь не может подписаться сам на себя';
+    END IF;
+END$$
+
+DELIMITER ;
