@@ -18,7 +18,8 @@
 - id
 - name
 - genres (2many → music_genres)
-- author (text)
+- author (text)                    
+- owner_id (FK → user, not null)   
 - album_id (FK → album, nullable)
 - file_url
 - image
