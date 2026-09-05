@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:latest
+    container_name: mysql_coop_project
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+    ports:
+      - "3300:3300"
+    volumes:
+      # Сохраняем данные базы на хост-машине, чтобы они не удалялись при остановке контейнера
+      - mysql_data:/var/lib/mysql
+      # (Опционально) Папка для автоинициализации скриптов скриптами с компьютера
+      - ./init-scripts:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql_data:
