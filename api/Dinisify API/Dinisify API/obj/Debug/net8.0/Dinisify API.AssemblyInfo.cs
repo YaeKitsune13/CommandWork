@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Dinisify API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c7c527bf5a499a27be873515b6962f242b3d355e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1dd8e26ee18ea6f9f28c96440baf8819f36db336")]
 [assembly: System.Reflection.AssemblyProductAttribute("Dinisify API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Dinisify API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
