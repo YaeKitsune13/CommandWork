@@ -115,3 +115,4 @@
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/FirebirdSql.EntityFrameworkCore.Firebird.dll
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/MySqlConnector.dll
 /home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Pomelo.EntityFrameworkCore.MySql.dll
+/home/irhan/CommandWork/api/Dinisify API/Dinisify API/bin/Debug/net8.0/Dinisify API.staticwebassets.runtime.json
