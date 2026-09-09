@@ -1,9 +1,13 @@
+using System.Windows.Markup;
+using System.Xml;
 using Dinisify_API.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 public class MusicController : ControllerBase
 {
+// [Authorize]
 [HttpPost("/api/music")]
 public async Task<IActionResult> upload_Music(MusicUpload dto)
     {
@@ -93,4 +97,38 @@ public async Task<IActionResult> upload_Music(MusicUpload dto)
         _ => "application/octet-stream"
     };
 }
+// [Authorize]
+[HttpDelete("api/music/delete")]
+public IActionResult music_delete(ulong id)
+    {
+        var db = new CoopProjectContext();
+        var music = db.Musics.FirstOrDefault(m => m.Id == id);
+        if (music == null)
+        {
+            return NotFound("Песня не найдена!");
+        }
+        db.Musics.Remove(music);
+        db.SaveChanges();
+        return Ok(new { message = "Песня удалена!"});  
+    }
+  //  [Authorize]
+    [HttpPut("api/music/edit")]
+    public IActionResult edit_music(MusicEdit dto)
+    {
+        var db = new CoopProjectContext();
+        var music = db.Musics.FirstOrDefault(m => m.Id == dto.Id);
+          if (music == null)
+        {
+            return NotFound("Песня не найдена!");
+        }
+        music.Name = dto.Name;
+        music.Author = dto.Author;
+        music.OwnerId = dto.OwnerId;
+        music.AlbumId = dto.AlbumId;
+        music.Status = dto.Status;
+        music.RejectionReason = dto.RejectionReason;
+        db.SaveChanges();
+        return Ok(new { message = "Песня обновлена!"});
+    }
+
 }
