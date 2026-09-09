@@ -1,4 +1,5 @@
 using System.Text;
+using Dinisify_API.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -57,6 +58,9 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddDbContext<CoopProjectContext>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<JwtTokenGenerator>();
 
 var app = builder.Build();
 
