@@ -10,6 +10,11 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot", "-p1234"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   api:
     build:
@@ -21,9 +26,10 @@ services:
       - "5000:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=coop_db;User=root;Password=1234;"
+      ConnectionStrings__DefaultConnection: "Server=db;Port=3306;Database=coop_project;User=root;Password=1234;"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   mysql_data:
