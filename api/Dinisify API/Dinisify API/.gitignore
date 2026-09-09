@@ -47,3 +47,5 @@ TestResults/
 ## Настройки пользователя ОС
 .DS_Store
 Thumbs.db
+# Папка с песнями и фото альмобов
+wwwroot/uploads/
