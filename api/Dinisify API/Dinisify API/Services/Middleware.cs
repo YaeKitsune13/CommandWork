@@ -3,18 +3,25 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-public class JwtTokenGenerator {
+public class JwtTokenGenerator
+{
     private readonly IConfiguration _config;
 
     public JwtTokenGenerator(IConfiguration config) => _config = config;
 
-    public string GenerateToken(string userId, string username){
-        var claims = new[]{
+    public string GenerateToken(string userId, string username, string role)
+    {
+        var claims = new List<Claim>
+        {
             new Claim(ClaimTypes.NameIdentifier, userId),
-            new Claim(ClaimTypes.Name, username)
+            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Role, role)
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"])!);
+        var keyValue = _config["Jwt:Key"]
+            ?? throw new InvalidOperationException("Jwt:Key не задан в конфигурации");
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyValue));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -23,7 +30,8 @@ public class JwtTokenGenerator {
             claims: claims,
             expires: DateTime.UtcNow.AddHours(2),
             signingCredentials: creds
-            );
+        );
+
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

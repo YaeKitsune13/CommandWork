@@ -35,19 +35,27 @@ public class AuthController : ControllerBase
             return Unauthorized("Неверные учётные данные");
         }
 
-        var token = _tokenGenerator.GenerateToken(user.Id, user.Username);
+        var token = _tokenGenerator.GenerateToken($"{user.Id}", user.Nickname, user.Role);
         return Ok(new { token });
     }
 }
 
-public class LoginRequest
+public class LoginRequest : IValidatableObject
 {
-    [EmailAddress]
-    public string? Email { get; set; }
-
-    [Phone]
-    public string? Phone { get; set; }
-
-    [Required]
+    [EmailAddress] public string? Email { get; set; }
+    [Phone] public string? Phone { get; set; }
     public string Password { get; set; } = string.Empty;
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext context)
+    {
+        if (string.IsNullOrWhiteSpace(Email) && string.IsNullOrWhiteSpace(Phone))
+            yield return new ValidationResult(
+                "Укажите email или телефон",
+                new[] { nameof(Email), nameof(Phone) });
+
+        if (string.IsNullOrWhiteSpace(Password))
+            yield return new ValidationResult(
+                "Пароль обязателен",
+                new[] { nameof(Password) });
+    }
 }
