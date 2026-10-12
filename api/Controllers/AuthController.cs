@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api/users/")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _auth;
