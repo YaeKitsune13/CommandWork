@@ -10,6 +10,7 @@ public static class ServiceCollectionExtensions
 
         services.AddDbContext<CoopProjectContext>(o => o.UseMySql(cs, ServerVersion.AutoDetect(cs)));
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
 
         return services;
     }

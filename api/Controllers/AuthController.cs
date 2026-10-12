@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
-[Route("api")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _auth;
@@ -23,6 +23,10 @@ public class AuthController : ControllerBase
         var token = await _auth.LoginAsync(dto);
         return token is null ? Unauthorized() : Ok(new TokenDto(token));
     }
+
+    [AllowAnonymous]
+    [HttpPost("guest")]
+    public IActionResult Guest() => Ok(new TokenDto(JWTSetup.CreateGuestToken()));
 
     [Authorize]
     [HttpGet("me")]
