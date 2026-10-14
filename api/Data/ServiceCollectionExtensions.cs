@@ -10,10 +10,8 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddAppServices(this IServiceCollection services, IConfiguration config)
     {
-        var cs = config.GetConnectionString("Default");
+        // AddDbContext отсюда убираем, он уже настроен в Program.cs
 
-<<<<<<< HEAD
-        services.AddDbContext<CoopProjectContext>(o => o.UseMySql(cs, ServerVersion.AutoDetect(cs)));
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
 
