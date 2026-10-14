@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-using api.Services;
->>>>>>> apibackup
 using Scalar.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
@@ -14,10 +10,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddJwtAuth();
 builder.Services.AddAppServices(builder.Configuration);
 builder.Services.AddControllers();
-<<<<<<< HEAD
-=======
-builder.Services.AddScoped<ITrackService, TrackService>();
->>>>>>> apibackup
 builder.Services.AddOpenApi();
 
 // Регистрируем DbContext
