@@ -1,9 +1,17 @@
+<<<<<<< HEAD
+=======
+using api.Services;
+>>>>>>> apibackup
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJwtAuth();
 builder.Services.AddAppServices(builder.Configuration);
 builder.Services.AddControllers();
+<<<<<<< HEAD
+=======
+builder.Services.AddScoped<ITrackService, TrackService>();
+>>>>>>> apibackup
 builder.Services.AddOpenApi();
 
 var app = builder.Build();

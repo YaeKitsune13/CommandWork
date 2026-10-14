@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using api.Entities;
 using api.Data;
+<<<<<<< HEAD
+=======
+using api.Services;
+>>>>>>> apibackup
 
 public static class ServiceCollectionExtensions
 {
@@ -8,6 +12,7 @@ public static class ServiceCollectionExtensions
     {
         var cs = config.GetConnectionString("Default");
 
+<<<<<<< HEAD
         services.AddDbContext<CoopProjectContext>(o => o.UseMySql(cs, ServerVersion.AutoDetect(cs)));
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
@@ -15,3 +20,15 @@ public static class ServiceCollectionExtensions
         return services;
     }
 }
+=======
+        services.AddDbContext<CoopProjectContext>(o =>
+            o.UseMySql(cs, new MySqlServerVersion(new Version(8, 0, 36))));
+
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ITrackService, TrackService>();
+
+        return services;
+    }
+}
+>>>>>>> apibackup
