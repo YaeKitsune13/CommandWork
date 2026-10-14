@@ -24,18 +24,19 @@ public class AlbumsController : ControllerBase
     [HttpGet("{id}")]
     public Task<IActionResult> Get([FromRoute] ulong id) =>
         Handle(async () => Ok(await _albums.GetAsync(id)));
+[HttpPost]
+[Consumes("multipart/form-data")]
+public async Task<IActionResult> Create([FromForm] AlbumCreateDto dto)
+{
+    var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (string.IsNullOrEmpty(userIdStr) || !ulong.TryParse(userIdStr, out ulong userId))
+    {
+        return Unauthorized();
+    }
 
-    [HttpPost]
-    [Authorize] 
-    [Consumes("multipart/form-data")]
-    public Task<IActionResult> Create([FromForm] AlbumCreateDto dto) =>
-        Handle(async () =>
-        {
-            var userId = ulong.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-            var album = await _albums.CreateAsync(dto, userId);
-            return Ok(new { message = "Альбом успешно создан", album });
-        });
-
+    var album = await _albums.CreateAsync(dto, userId);
+    return Ok(new { message = "Альбом успешно создан", album });
+}
     [HttpPut("edit")]
     public Task<IActionResult> Edit([FromBody] AlbumEditDto dto) =>
         Handle(async () =>
