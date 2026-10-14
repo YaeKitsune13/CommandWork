@@ -13,6 +13,7 @@ builder.Services.AddAppServices(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITrackService, TrackService>();
+builder.Services.AddScoped<IAlbumService, AlbumService>();
 builder.Services.AddOpenApi();
 
 // Регистрируем DbContext
