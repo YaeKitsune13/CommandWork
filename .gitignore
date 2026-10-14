@@ -35,8 +35,6 @@ publish/
 logs/
 
 ## Секреты / конфиги с чувствительными данными
-appsettings.Development.json
-appsettings.*.local.json
 *.env
 .env
 
