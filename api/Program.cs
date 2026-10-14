@@ -1,6 +1,7 @@
 using Scalar.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using api.Data;
+using api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddJwtAuth();
 builder.Services.AddAppServices(builder.Configuration);
+
 builder.Services.AddControllers();
+builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddOpenApi();
 
 // Регистрируем DbContext
@@ -28,7 +31,6 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    // Включаем HTTPS-редирект только вне Development (не внутри локального Docker)
     app.UseHttpsRedirection();
 }
 
