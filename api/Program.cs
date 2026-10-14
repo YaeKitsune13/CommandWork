@@ -1,10 +1,23 @@
 using Scalar.AspNetCore;
+using Microsoft.EntityFrameworkCore;
+using api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found in appsettings.json.");
+
 builder.Services.AddJwtAuth();
 builder.Services.AddAppServices(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+// Регистрируем DbContext
+builder.Services.AddDbContext<CoopProjectContext>(options =>
+    options.UseMySql(
+        connectionString,
+        new MySqlServerVersion(new Version(8, 0, 36))
+    ));
 
 var app = builder.Build();
 
@@ -13,8 +26,13 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+else
+{
+    // Включаем HTTPS-редирект только вне Development (не внутри локального Docker)
+    app.UseHttpsRedirection();
+}
+
 app.UseMiddleware<ExceptionMiddleware>();
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
@@ -22,7 +40,9 @@ app.MapControllers();
 app.Lifetime.ApplicationStarted.Register(() =>
 {
     if (app.Environment.IsDevelopment())
-        Console.WriteLine("Scalar: http://localhost:5140/scalar/v1");
+    {
+        Console.WriteLine("Scalar: http://localhost:5000/scalar/v1");
+    }
 });
 
 app.Run();

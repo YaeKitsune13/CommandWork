@@ -44,9 +44,7 @@ public partial class CoopProjectContext : DbContext
 
     public virtual DbSet<UserListened> UserListeneds { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseMySql("server=127.0.0.1;port=3300;database=coop_project;user=root;password=1234", Microsoft.EntityFrameworkCore.ServerVersion.Parse("26.7.0-mysql"));
-
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
