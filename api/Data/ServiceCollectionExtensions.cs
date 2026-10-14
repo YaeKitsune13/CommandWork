@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ITrackService, TrackService>();
-
+        services.AddScoped<IAlbumService, AlbumService>(); 
         services.AddScoped<ISocialService, SocialService>();
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IDiscoveryService, DiscoveryService>();
