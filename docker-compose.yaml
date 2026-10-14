@@ -26,7 +26,6 @@ services:
       - "5000:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: "server=db;port=3306;database=coop_project;user=root;password=1234"
     depends_on:
       db:
         condition: service_healthy
