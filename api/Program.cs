@@ -15,6 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IAlbumService, AlbumService>();
 builder.Services.AddScoped<IComplaintService, ComplaintService>();
+builder.Services.AddScoped<IModeratorService, ModeratorService>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<CoopProjectContext>(options =>

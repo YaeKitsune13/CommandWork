@@ -61,15 +61,18 @@ public class AlbumService : IAlbumService
         return ToDto(album);
     }
 
-    public async Task<IEnumerable<AlbumResponseDto>> GetAllAsync(string? search)
-    {
-        var query = Alive.AsNoTracking();
-        if (!string.IsNullOrEmpty(search))
-            query = query.Where(a => a.Name.Contains(search));
+   public async Task<IEnumerable<AlbumResponseDto>> GetAllAsync(string? search)
+{
+    var query = Alive
+        .Include(a => a.Musics) 
+        .AsNoTracking();
 
-        var albums = await query.ToListAsync();
-        return albums.Select(ToDto);
-    }
+    if (!string.IsNullOrEmpty(search))
+        query = query.Where(a => a.Name.Contains(search));
+
+    var albums = await query.ToListAsync();
+    return albums.Select(ToDto);
+}
 
     public async Task EditAsync(AlbumEditDto dto)
     {

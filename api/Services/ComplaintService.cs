@@ -52,7 +52,7 @@ public class ComplaintService : IComplaintService
         c.Reason,
         "", 
         c.ReporterId,
-        Enum.TryParse<ComplaintStatus>(c.Status, true, out var statusEnum) ? statusEnum : ComplaintStatus.pending, 
+        Enum.TryParse<ComplaintStatus>(c.Status, true, out var statusEnum) ? statusEnum : ComplaintStatus.Pending, 
         c.CreatedAt
     ));
 }
