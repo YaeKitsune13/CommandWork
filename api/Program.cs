@@ -14,9 +14,9 @@ builder.Services.AddAppServices(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IAlbumService, AlbumService>();
+builder.Services.AddScoped<IComplaintService, ComplaintService>();
 builder.Services.AddOpenApi();
 
-// Регистрируем DbContext
 builder.Services.AddDbContext<CoopProjectContext>(options =>
     options.UseMySql(
         connectionString,
