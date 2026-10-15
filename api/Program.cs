@@ -31,7 +31,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
-        options.DisableAgent(); // Отключает Ask AI / Agent Scalar
+        // options.DisableAgent(); // Отключает Ask AI / Agent Scalar
     });
 }
 else
