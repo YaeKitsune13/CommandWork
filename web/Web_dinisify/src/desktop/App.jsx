@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import Sidebar from './components/sidebar/sidebar';
 import './App.css';
-
+import Catalog_window from './views/Catalog/Catalog_window';
+import Login_window from './views/Login/Login_window'; 
 function App() {
   const [role, setRole] = useState('guest');
+  const [currentView, setCurrentView] = useState('catalog');
 
   const handleLogoClick = () => {
     console.log('Navigate → Catalog_window');
   };
-
   const handleLoginClick = () => {
-    console.log('Navigate → Login_window');
+    setCurrentView('login');
   };
 
   const handleNavigate = (route) => {
@@ -27,8 +28,16 @@ function App() {
       />
 
       <main className="app-main">
-        <h1>Catalog_window</h1>
-        <p>Catalogue content will go here.</p>
+           <div className="app-content">
+          {currentView == 'catalog' && <Catalog_window />}
+          
+          {currentView == 'login' && (
+            <Login_window 
+              onLoginSuccess={handleLoginSuccess} 
+              onCancel={() => setCurrentView('catalog')} 
+            />
+          )}
+        </div>
 
         <div className="debug-row">
           <span>Preview role:</span>
