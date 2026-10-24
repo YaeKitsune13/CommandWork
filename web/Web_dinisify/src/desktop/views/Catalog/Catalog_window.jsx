@@ -2,40 +2,51 @@ import { useState } from 'react';
 import { Search, Play, Heart, MoreHorizontal } from 'lucide-react';
 import './Catalog_window.css';
 
+import mfdoomImg from '/src/assets/images/MFDOOM.jpg';
+import madnessImg from '/src/assets/images/nightboattocairo.jpg';
+import redFangImg from '/src/assets/images/redfang.jpg';
+import saturnsImg from '/src/assets/images/saturns_children.jpg';
+import earthWindImg from '/src/assets/images/septembre.jpg';
+import tylerImg from '/src/assets/images/tylerthecreator.jpg';
+
 function Catalog_window() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // =====================================================================
+  
   const mockAuthors = [
-    { id: 'a1', name: 'Nova Drift', tracks: 12, color: '#E5383B' },
-    { id: 'a2', name: 'Lumen', tracks: 8, color: '#4A90D9' },
-    { id: 'a3', name: 'Kairo', tracks: 21, color: '#F5A623' },
-    { id: 'a4', name: 'Mellow Vibe', tracks: 5, color: '#7B61FF' },
-    { id: 'a5', name: 'Static Bloom', tracks: 17, color: '#2ECC71' },
-    { id: 'a6', name: 'Glass Echo', tracks: 9, color: '#E91E63' },
+    { id: 'a1', name: 'MF DOOM', tracks: 12, color: '#E5383B', photo: mfdoomImg },
+    { id: 'a2', name: 'MADNESS', tracks: 8, color: '#4A90D9', photo: madnessImg },
+    { id: 'a3', name: 'Red Fang', tracks: 21, color: '#F5A623', photo: redFangImg },
+    { id: 'a4', name: 'Electric Wizards', tracks: 5, color: '#7B61FF', photo: saturnsImg },
+    { id: 'a5', name: 'earth, fire & wind', tracks: 17, color: '#2ECC71', photo: earthWindImg },
+    { id: 'a6', name: 'Tyler the Creator', tracks: 9, color: '#E91E63', photo: tylerImg },
   ];
 
   const mockTracks = [
     {
       id: 't1',
-      title: 'Midnight Drive',
-      artist: 'Nova Drift',
+      title: 'rap snitch knishes',
+      artist: 'MF DOOM',
       genre: 'Synthwave',
       duration: '3:42',
+      image:mfdoomImg
     },
     {
       id: 't2',
-      title: 'Neon Rain',
-      artist: 'Lumen',
+      title: 'Prehistoric dogs',
+      artist: 'Red Fang',
       genre: 'Electronic',
       duration: '4:18',
+      image:redFangImg
     },
     {
       id: 't3',
-      title: 'Glass Echoes',
-      artist: 'Glass Echo',
+      title: ' Saturns Children',
+      artist: 'Electric Wizards',
       genre: 'Ambient',
       duration: '5:01',
+      image:saturnsImg
     },
   ];
   // =====================================================================
@@ -49,7 +60,7 @@ function Catalog_window() {
           <input
             type="text"
             className="catalog__search-input"
-            placeholder="Search tracks, artists, playlists..."
+            placeholder="Поиск Песен, Артистов, Плейлистов"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -65,14 +76,15 @@ function Catalog_window() {
         <div className="catalog__authors">
           {mockAuthors.map((author) => (
             <button key={author.id} type="button" className="author-card">
-              <div
-                className="author-card__avatar"
-                style={{ background: author.color }}
-              >
-                {author.name.charAt(0)}
+             <div className="author-card__image-wrapper">
+                <img 
+                  src={author.photo} 
+                  alt={author.name} 
+                  className="author-card__image" 
+                />
               </div>
               <span className="author-card__name">{author.name}</span>
-              <span className="author-card__count">{author.tracks} tracks</span>
+              <span className="author-card__count">{author.tracks} Песен</span>
             </button>
           ))}
         </div>
@@ -88,7 +100,9 @@ function Catalog_window() {
                 <Play size={18} />
               </button>
 
-              <div className="track-row__cover" />
+              <div className="track-row__cover" >
+                <img src={track.image} alt="almub" />
+              </div>
 
               <div className="track-row__info">
                 <span className="track-row__title">{track.title}</span>

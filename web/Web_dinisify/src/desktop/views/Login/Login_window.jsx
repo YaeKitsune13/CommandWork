@@ -8,7 +8,7 @@ function Login_window({ onLoginSuccess, onCancel }) {
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
-    e.preventDefault(); // Prevents the page from refreshing
+    e.preventDefault(); 
     
     if (email.length == 0 || password.length == 0) {
       setError('Please fill in all fields.');
@@ -16,19 +16,12 @@ function Login_window({ onLoginSuccess, onCancel }) {
     }
 
     setError('');
-    
-    // =====================================================================
-    // ===== MOCK LOGIN — DELETE WHEN API IS CONNECTED =====================
-    // =====================================================================
-    // In the real app, you will send a POST request to /auth/login here.
-    // For now, we just instantly log the user in as a standard 'user'.
+
     onLoginSuccess('user'); 
-    // =====================================================================
   };
 
   return (
     <div className="login-container">
-      {/* Back button to return to catalog without logging in */}
       <button type="button" className="login-back-btn" onClick={onCancel}>
         <ArrowLeft size={18} /> Back to Catalog
       </button>
