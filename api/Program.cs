@@ -12,6 +12,16 @@ builder.Services.AddJwtAuth();
 builder.Services.AddAppServices(builder.Configuration);
 
 builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IAlbumService, AlbumService>();
 builder.Services.AddScoped<IComplaintService, ComplaintService>();
@@ -31,17 +41,19 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
-        options.DisableAgent(); // Отключает Ask AI / Agent Scalar
+        options.DisableAgent();
     });
 }
 else
 {
     app.UseHttpsRedirection();
 }
-
-app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<ExceptionMiddleware>(); 
+app.UseRouting();
+app.UseCors("AllowSpecificOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Lifetime.ApplicationStarted.Register(() =>
