@@ -77,6 +77,9 @@ export default function Home() {
             Модерация
             </Link>
             )}
+            <Link to="/settings" className="home__upload-link" style={{ background: '#455a64' }}>
+              Настройки
+            </Link>
         <button onClick={logout}>Выйти</button>
       </div>
     </div>

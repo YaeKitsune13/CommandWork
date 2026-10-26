@@ -11,6 +11,7 @@ import UploadTrack from './views/UploadTrack';
 import Profile from './views/Profile';
 import RequireRole from '../shared/components/RequireRole';
 import ModerationPanel from './views/ModerationPanel';
+import ProfileSettings from './views/ProfileSettings';
 export default function MobileApp() {
   return (
     <>
@@ -39,6 +40,7 @@ export default function MobileApp() {
                 <ModerationPanel />
               </RequireRole>
             }/>
+          <Route path="/settings" element={<RequireAuth><ProfileSettings /></RequireAuth>} />
         </Routes>
       </div>
       <PlayerBar />

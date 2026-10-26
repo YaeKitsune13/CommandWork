@@ -24,30 +24,40 @@ function getRoleFromToken(token) {
   const roleClaim = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
   return roleClaim || payload.role || 'user';
 }
+function getIdFromToken(token) {
+  const payload = parseJwt(token);
+  if (!payload) return null;
+  return payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] 
+      || payload.nameid 
+      || payload.sub 
+      || null;
+}
 
 export function useAuth() {
   const [token, setToken] = useState(() => localStorage.getItem('token'));
-  
   const [role, setRole] = useState(() => {
     const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      const realRole = getRoleFromToken(savedToken);
-      localStorage.setItem('role', realRole);
-      return realRole;
-    }
-    return 'guest';
+    return savedToken ? getRoleFromToken(savedToken) : 'guest';
+  });
+  const [userId, setUserId] = useState(() => {
+    const savedToken = localStorage.getItem('token');
+    return savedToken ? getIdFromToken(savedToken) : null;
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const persist = useCallback((newToken, newRole) => {
+  const persist = useCallback((newToken) => {
+    const actualRole = getRoleFromToken(newToken);
+    const actualId = getIdFromToken(newToken);
+    
     localStorage.setItem('token', newToken);
-    localStorage.setItem('role', newRole);
+    localStorage.setItem('role', actualRole);
+    
     setToken(newToken);
-    setRole(newRole);
+    setRole(actualRole);
+    setUserId(actualId);
   }, []);
-
   const login = async (email, password) => {
     setLoading(true);
     setError(null);
@@ -56,8 +66,7 @@ export function useAuth() {
       const newToken = data?.token ?? data?.access_token ?? data;
       if (!newToken) throw new Error('Токен не получен от сервера');
       
-      const actualRole = getRoleFromToken(newToken);
-      persist(newToken, actualRole);
+      persist(newToken); 
       
       return { success: true };
     } catch (err) {
@@ -74,8 +83,10 @@ export function useAuth() {
     try {
       const data = await authApi.guest();
       const newToken = data?.token ?? data?.access_token ?? data;
-      if (!newToken) throw new Error('Гостевой токен не получен');
-      persist(newToken, 'guest');
+      if (!newToken) throw new Error('токен не получен');
+      
+      persist(newToken);
+      
       return { success: true };
     } catch (err) {
       setError(err.message);
@@ -84,21 +95,21 @@ export function useAuth() {
       setLoading(false);
     }
   };
-
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     setToken(null);
     setRole('guest');
+    setUserId(null);
   };
 
   return {
     token,
     role,
+    userId,
     isGuest: role === 'guest',
     isAuthenticated: !!token,
     login,
-    loginAsGuest,
     logout,
     loading,
     error,

@@ -14,7 +14,7 @@ export default function PlayerBar() {
       </div>
 
       <button className="player-bar__btn" onClick={toggle}>
-        {isPlaying ? '⏸' : '▶'}
+        {isPlaying ? '=' : ')'}
       </button>
 
       <div className="player-bar__progress">

@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useAlbum } from '../../shared/hooks/useAlbum';
 import TrackCard from '../../shared/components/TrackCard';
+import { getImageUrl } from '../../shared/utils/imageUrl';
 import './Album.css';
 
 export default function Album() {
@@ -11,6 +12,8 @@ export default function Album() {
   if (error) return <p className="album__error">{error}</p>;
   if (!album) return null;
 
+  const coverUrl = getImageUrl(album.image);
+
   const artistLabel = album.artistName ?? `Артист #${album.artistId}`;
   const tracks = (album.tracks ?? []).map((t) => ({
     ...t,
@@ -19,11 +22,15 @@ export default function Album() {
 
   return (
     <div className="album">
-      <Link to="/home" className="album__back">(-- Назад к поиску</Link>
+      <Link to="/" className="album__back">На главную</Link>
 
       <header className="album__header">
         <div className="album__cover">
-          {album.image ? <img src={album.image} alt={album.name} /> : <div className="album__cover-placeholder">♪</div>}
+          {coverUrl ? (
+            <img src={coverUrl} alt={album.name} />
+          ) : (
+            <div className="album__cover-placeholder">♪</div>
+          )}
         </div>
         <div className="album__meta">
           <h1>{album.name}</h1>

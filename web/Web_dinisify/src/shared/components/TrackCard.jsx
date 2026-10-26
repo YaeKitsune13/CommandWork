@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { usePlayer } from '../player/PlayerContext';
 import './TrackCard.css';
+import { getImageUrl } from '../utils/imageUrl';
 
 export default function TrackCard({ track, rank }) {
   const navigate = useNavigate();
@@ -12,12 +13,13 @@ export default function TrackCard({ track, rank }) {
   const image = track.image;
   const duration = track.durationSec;
   const listens = track.listensCount;
+  const coverUrl = getImageUrl(image);
 
   const isCurrent = current?.id === id;
 
   const handlePlay = (e) => {
     e.stopPropagation();
-    if (isCurrent) playTrack(track); // toggle — если добавите toggle, ещё лучше
+    if (isCurrent) playTrack(track);
     else playTrack(track);
   };
 
@@ -46,7 +48,7 @@ export default function TrackCard({ track, rank }) {
       <div className="track-card__rank">{rank ?? track.rank ?? ''}</div>
 
       <div className="track-card__cover">
-        {image ? <img src={image} alt={name} /> : <div className="track-card__placeholder">♪</div>}
+        {coverUrl ? <img src={coverUrl} alt={name} /> : <div className="track-card__placeholder">♪</div>}
       </div>
 
       <div className="track-card__info">

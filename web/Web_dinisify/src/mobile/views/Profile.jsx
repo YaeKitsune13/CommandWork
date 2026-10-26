@@ -5,6 +5,7 @@ import { useFollow } from '../../shared/hooks/useFollow';
 import { useAuth } from '../../shared/hooks/auth';
 import ReportButton from '../../shared/components/ReportButton';
 import './Profile.css';
+import { getImageUrl } from '../../shared/utils/imageUrl';
 
 export default function Profile() {
   const { id } = useParams();
@@ -13,9 +14,9 @@ export default function Profile() {
   const { token, role } = useAuth();
   const { follow, unfollow, loading: followLoading, error: followError } = useFollow(reload);
   const [isFollowing, setIsFollowing] = useState(false);
-
+  const isOwnProfile = String(userId) === String(id);
   const canFollow = !!token && role !== 'guest';
-
+  const avatarUrl = getImageUrl(profile.image);
   const goBack = () => {
     if (window.history.length > 1) navigate(-1);
     else navigate('/');
@@ -58,14 +59,14 @@ export default function Profile() {
 
       <header className="profile__header">
         <div className="profile__avatar">
-          {profile.image ? (
-            <img src={profile.image} alt={profile.nickname} />
-          ) : (
-            <div className="profile__avatar-placeholder">
-              {profile.nickname?.[0]?.toUpperCase() ?? '?'}
-            </div>
-          )}
-        </div>
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={profile.nickname} />
+        ) : (
+          <div className="profile__avatar-placeholder">
+            {profile.nickname?.[0]?.toUpperCase() ?? '?'}
+          </div>
+        )}
+      </div>
         <div className="profile__info">
           <h1>{profile.nickname}</h1>
           <div className="profile__badges">
@@ -107,7 +108,9 @@ export default function Profile() {
         </p>
       )}
       {followError && <p className="profile__error">{followError}</p>}
-
+      {isOwnProfile && (
+        <Link to="/settings" className="profile__edit-btn">Редактировать профиль</Link>
+      )}
       <section className="profile__section">
         <h2>Подписчики</h2>
         {renderUserList(followers, 'Пока никто не подписан')}

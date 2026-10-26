@@ -1,4 +1,4 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+export const API_URL = import.meta.env.VITE_API_URL || '/api';
 export class ApiError extends Error {
   constructor(message, status) {
     super(message);
@@ -20,7 +20,6 @@ export async function request(path, { method = 'GET', body, auth = true } = {}) 
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  // Читаем текст ответа (даже если он пустой)
   const text = await response.text();
   let data = null;
   if (text) {
@@ -28,11 +27,9 @@ export async function request(path, { method = 'GET', body, auth = true } = {}) 
   }
 
   if (!response.ok) {
-    // ✨ НОВОЕ: Если токен протух (401) — разлогиниваем
     if (response.status === 401 && auth && !path.includes('/auth/login')) {
       localStorage.removeItem('token');
       localStorage.removeItem('role');
-      // Принудительно перезагружаем страницу, чтобы RequireAuth кинул на /login
       window.location.href = '/login';
     }
 

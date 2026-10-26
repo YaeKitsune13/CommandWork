@@ -1,8 +1,9 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTrackMeta } from '../../shared/hooks/useTrackMeta';
 import { usePlayer } from '../../shared/player/PlayerContext';
-import './TrackPage.css';
+import { getImageUrl } from '../../shared/utils/imageUrl';
 import ReportButton from '../../shared/components/ReportButton';
+import './TrackPage.css';
 
 export default function TrackPage() {
   const { id } = useParams();
@@ -16,15 +17,19 @@ export default function TrackPage() {
   };
 
   if (loading) return <p className="track-page__hint">Загрузка...</p>;
+  
   if (error) return (
     <div className="track-page">
       <button onClick={goBack} className="track-page__back">← Назад</button>
       <p className="track-page__error">{error}</p>
     </div>
   );
+  
   if (!track) return null;
 
+  const coverUrl = getImageUrl(track.image);
   const isCurrent = current?.id === track.id;
+  
   const statusLabel = {
     approved: 'Одобрен',
     pending: 'На модерации',
@@ -38,12 +43,12 @@ export default function TrackPage() {
 
   return (
     <div className="track-page">
-      <button onClick={goBack} className="track-page__back">(-- Назад</button>
+      <button onClick={goBack} className="track-page__back">← Назад</button>
 
       <header className="track-page__header">
         <div className="track-page__cover">
-          {track.image ? (
-            <img src={track.image} alt={track.name} />
+          {coverUrl ? (
+            <img src={coverUrl} alt={track.name} />
           ) : (
             <div className="track-page__cover-placeholder">♪</div>
           )}
@@ -75,12 +80,24 @@ export default function TrackPage() {
       </header>
 
       <button className="track-page__play" onClick={handlePlay}>
-        {isCurrent && isPlaying ? 'Пауза' : 'Слушать'}
+        {isCurrent && isPlaying ? '⏸ Пауза' : '▶ Слушать'}
       </button>
 
       <dl className="track-page__details">
         <dt>Дата загрузки</dt>
         <dd>{new Date(track.createdAt).toLocaleDateString('ru-RU')}</dd>
+
+        {track.ownerId && (
+          <>
+            <dt>Владелец</dt>
+            <dd>
+              <Link to={`/users/${track.ownerId}`} className="track-page__owner-link">
+                Пользователь #{track.ownerId}
+              </Link>
+            </dd>
+          </>
+        )}
+
         {track.fileUrl && (
           <>
             <dt>Файл</dt>
@@ -88,35 +105,10 @@ export default function TrackPage() {
           </>
         )}
       </dl>
-      <dl className="track-page__details">
-        <dt>Дата загрузки</dt>
-        <dd>{new Date(track.createdAt).toLocaleDateString('ru-RU')}</dd>
 
-        {track.ownerId && (
-            <>
-            <dt>Владелец</dt>
-            <dd>
-                <Link to={`/users/${track.ownerId}`} className="track-page__owner-link">
-                Пользователь #{track.ownerId}
-                </Link>
-            </dd>
-            </>
-        )}
-
-        {track.fileUrl && (
-            <>
-            <dt>Файл</dt>
-            <dd className="track-page__file">{track.fileUrl}</dd>
-            </>
-        )}
-        </dl>
-        <dl className="track-page__details">
-        {/* ы */}
-        </dl>
-
-        <div style={{ marginTop: '24px' }}>
+      <div style={{ marginTop: '24px' }}>
         <ReportButton targetType="Track" targetId={track.id} label="Пожаловаться на трек" />
-        </div>
+      </div>
     </div>
   );
 }
