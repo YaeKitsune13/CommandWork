@@ -21,6 +21,18 @@ function Catalog_window() {
     { id: 'a4', name: 'Electric Wizards', tracks: 5, color: '#7B61FF', photo: saturnsImg },
     { id: 'a5', name: 'earth, fire & wind', tracks: 17, color: '#2ECC71', photo: earthWindImg },
     { id: 'a6', name: 'Tyler the Creator', tracks: 9, color: '#E91E63', photo: tylerImg },
+    { id: 'a7', name: 'MF DOOM', tracks: 12, color: '#E5383B', photo: mfdoomImg },
+    { id: 'a8', name: 'MADNESS', tracks: 8, color: '#4A90D9', photo: madnessImg },
+    { id: 'a9', name: 'Red Fang', tracks: 21, color: '#F5A623', photo: redFangImg },
+    { id: 'a10', name: 'Electric Wizards', tracks: 5, color: '#7B61FF', photo: saturnsImg },
+    { id: 'a11', name: 'earth, fire & wind', tracks: 17, color: '#2ECC71', photo: earthWindImg },
+    { id: 'a12', name: 'Tyler the Creator', tracks: 9, color: '#E91E63', photo: tylerImg },
+    { id: 'a13', name: 'MF DOOM', tracks: 12, color: '#E5383B', photo: mfdoomImg },
+    { id: 'a14', name: 'MADNESS', tracks: 8, color: '#4A90D9', photo: madnessImg },
+    { id: 'a15', name: 'Red Fang', tracks: 21, color: '#F5A623', photo: redFangImg },
+    { id: 'a16', name: 'Electric Wizards', tracks: 5, color: '#7B61FF', photo: saturnsImg },
+    { id: 'a17', name: 'earth, fire & wind', tracks: 17, color: '#2ECC71', photo: earthWindImg },
+    { id: 'a18', name: 'Tyler the Creator', tracks: 9, color: '#E91E63', photo: tylerImg },
   ];
 
   const mockTracks = [
@@ -28,7 +40,7 @@ function Catalog_window() {
       id: 't1',
       title: 'rap snitch knishes',
       artist: 'MF DOOM',
-      genre: 'Synthwave',
+      genre: 'Rap',
       duration: '3:42',
       image:mfdoomImg
     },
@@ -36,7 +48,7 @@ function Catalog_window() {
       id: 't2',
       title: 'Prehistoric dogs',
       artist: 'Red Fang',
-      genre: 'Electronic',
+      genre: 'Stoner Metal',
       duration: '4:18',
       image:redFangImg
     },
@@ -44,10 +56,59 @@ function Catalog_window() {
       id: 't3',
       title: ' Saturns Children',
       artist: 'Electric Wizards',
-      genre: 'Ambient',
+      genre: 'Doom metal',
       duration: '5:01',
       image:saturnsImg
     },
+     {
+      id: 't4',
+      title: 'rap snitch knishes',
+      artist: 'MF DOOM',
+      genre: 'Rap',
+      duration: '3:42',
+      image:mfdoomImg
+    },
+    {
+      id: 't5',
+      title: 'Prehistoric dogs',
+      artist: 'Red Fang',
+      genre: 'Stoner Metal',
+      duration: '4:18',
+      image:redFangImg
+    },
+    {
+      id: 't6',
+      title: ' Saturns Children',
+      artist: 'Electric Wizards',
+      genre: 'Doom metal',
+      duration: '5:01',
+      image:saturnsImg
+    },
+     {
+      id: 't7',
+      title: 'rap snitch knishes',
+      artist: 'MF DOOM',
+      genre: 'Rap',
+      duration: '3:42',
+      image:mfdoomImg
+    },
+    {
+      id: 't8',
+      title: 'Prehistoric dogs',
+      artist: 'Red Fang',
+      genre: 'Stoner Metal',
+      duration: '4:18',
+      image:redFangImg
+    },
+    {
+      id: 't9',
+      title: ' Saturns Children',
+      artist: 'Electric Wizards',
+      genre: 'Doom metal',
+      duration: '5:01',
+      image:saturnsImg
+    },
+    
   ];
   // =====================================================================
 

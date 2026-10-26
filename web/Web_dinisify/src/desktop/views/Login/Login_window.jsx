@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { LogIn, ArrowLeft } from 'lucide-react';
 import './Login_window.css';
 
-function Login_window({ onLoginSuccess, onCancel }) {
+function Login_window({ onLoginSuccess, onCancel,onGoToRegister }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,14 +27,13 @@ function Login_window({ onLoginSuccess, onCancel }) {
       </button>
 
       <div className="login-card">
-        <h2 className="login-title">Welcome Back</h2>
-        <p className="login-subtitle">Log in to your Dinisify account</p>
+        <p className="login-subtitle">Войдите в свой аккаунт</p>
 
         {error && <div className="login-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-input-group">
-            <label htmlFor="email">Email or Username</label>
+            <label htmlFor="email">Почта или Логин</label>
             <input
               id="email"
               type="text"
@@ -45,7 +44,7 @@ function Login_window({ onLoginSuccess, onCancel }) {
           </div>
 
           <div className="login-input-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Пароль</label>
             <input
               id="password"
               type="password"
@@ -56,12 +55,12 @@ function Login_window({ onLoginSuccess, onCancel }) {
           </div>
 
           <button type="submit" className="login-submit-btn">
-            <LogIn size={18} /> Log In
+            <LogIn size={18} /> Войти
           </button>
         </form>
 
         <div className="login-footer">
-          Don't have an account? <span className="login-link">Sign up</span>
+          Нету аккаунта ? <span className="login-link" onClick={onGoToRegister}>Создайте</span>
         </div>
       </div>
     </div>
