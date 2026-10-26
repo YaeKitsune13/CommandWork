@@ -1,20 +1,31 @@
 import { useState } from 'react';
 import Sidebar from './components/sidebar/sidebar';
 import './App.css';
+import Catalog_window from './views/Catalog/Catalog_window';
+import Login_window from './views/Login/Login_window'; 
+import Register_window from './views/Register_window/Register_window';
 
 function App() {
   const [role, setRole] = useState('guest');
+  const [currentView, setCurrentView] = useState('catalog');
 
   const handleLogoClick = () => {
-    console.log('Navigate → Catalog_window');
+    setCurrentView('catalog');
   };
 
   const handleLoginClick = () => {
-    console.log('Navigate → Login_window');
+    setCurrentView('login');
   };
-
+  
   const handleNavigate = (route) => {
     console.log('Navigate →', route);
+    setCurrentView('catalog');
+  };
+  
+  // This handles BOTH login and register
+  const handleAuthSuccess = (newRole) => {
+    setRole(newRole);          
+    setCurrentView('catalog'); 
   };
 
   return (
@@ -27,11 +38,29 @@ function App() {
       />
 
       <main className="app-main">
-        <h1>Catalog_window</h1>
-        <p>Catalogue content will go here.</p>
+        <div className="app-content">
+          {currentView == 'catalog' && <Catalog_window />}
+          
+          {currentView == 'login' && (
+            <Login_window 
+              onLoginSuccess={handleAuthSuccess} 
+              onGoToRegister={() => setCurrentView('register')} // <--- ADDED THIS
+              onCancel={() => setCurrentView('catalog')} 
+            />
+          )}
+
+          {/* ADDED THIS ENTIRE BLOCK */}
+          {currentView == 'register' && (
+            <Register_window 
+              onRegisterSuccess={handleAuthSuccess} 
+              onGoToLogin={() => setCurrentView('login')}
+              onCancel={() => setCurrentView('catalog')} 
+            />
+          )}
+        </div>
 
         <div className="debug-row">
-          <span>Preview role:</span>
+          <span>(DEV) выбор роли:</span>
           {['guest', 'user', 'moderator', 'admin'].map((r) => (
             <button
               key={r}
