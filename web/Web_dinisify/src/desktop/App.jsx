@@ -1,31 +1,36 @@
-import { useState } from 'react';
-import Sidebar from './components/sidebar/sidebar';
-import './App.css';
-import Catalog_window from './views/Catalog/Catalog_window';
-import Login_window from './views/Login/Login_window'; 
-import Register_window from './views/Register_window/Register_window';
+import { useState } from "react";
+import Sidebar from "./components/sidebar/sidebar";
+import "./App.css";
+import Catalog_window from "./views/Catalog/Catalog_window";
+import Login_window from "./views/Login/Login_window";
+import Register_window from "./views/Register_window/Register_window";
+import Player from "./components/player/player";
 
 function App() {
-  const [role, setRole] = useState('guest');
-  const [currentView, setCurrentView] = useState('catalog');
+  const [role, setRole] = useState("guest");
+  const [currentView, setCurrentView] = useState("catalog");
 
   const handleLogoClick = () => {
-    setCurrentView('catalog');
+    setCurrentView("catalog");
   };
 
   const handleLoginClick = () => {
-    setCurrentView('login');
+    setCurrentView("login");
+  }; 
+
+  const currentTrack = {
+    title: "prehistoric dogs",
+    artist: "red fang",
+    cover: "./src/assets/images/redfang.jpg",
   };
-  
   const handleNavigate = (route) => {
-    console.log('Navigate →', route);
-    setCurrentView('catalog');
+    console.log("Navigate →", route);
+    setCurrentView("catalog");
   };
-  
-  // This handles BOTH login and register
+
   const handleAuthSuccess = (newRole) => {
-    setRole(newRole);          
-    setCurrentView('catalog'); 
+    setRole(newRole);
+    setCurrentView("catalog");
   };
 
   return (
@@ -39,38 +44,40 @@ function App() {
 
       <main className="app-main">
         <div className="app-content">
-          {currentView == 'catalog' && <Catalog_window />}
-          
-          {currentView == 'login' && (
-            <Login_window 
-              onLoginSuccess={handleAuthSuccess} 
-              onGoToRegister={() => setCurrentView('register')} // <--- ADDED THIS
-              onCancel={() => setCurrentView('catalog')} 
+          {currentView == "catalog" && <Catalog_window />}
+
+          {currentView == "login" && (
+            <Login_window
+              onLoginSuccess={handleAuthSuccess}
+              onGoToRegister={() => setCurrentView("register")} 
+              onCancel={() => setCurrentView("catalog")}
             />
           )}
 
-          {/* ADDED THIS ENTIRE BLOCK */}
-          {currentView == 'register' && (
-            <Register_window 
-              onRegisterSuccess={handleAuthSuccess} 
-              onGoToLogin={() => setCurrentView('login')}
-              onCancel={() => setCurrentView('catalog')} 
+          {currentView == "register" && (
+            <Register_window
+              onRegisterSuccess={handleAuthSuccess}
+              onGoToLogin={() => setCurrentView("login")}
+              onCancel={() => setCurrentView("catalog")}
             />
           )}
         </div>
 
         <div className="debug-row">
           <span>(DEV) выбор роли:</span>
-          {['guest', 'user', 'moderator', 'admin'].map((r) => (
+          {["guest", "user", "moderator", "admin"].map((r) => (
             <button
               key={r}
-              className={r == role ? 'debug-btn debug-btn--active' : 'debug-btn'}
+              className={
+                r == role ? "debug-btn debug-btn--active" : "debug-btn"
+              }
               onClick={() => setRole(r)}
             >
               {r}
             </button>
           ))}
         </div>
+        <Player track={currentTrack} />
       </main>
     </div>
   );
