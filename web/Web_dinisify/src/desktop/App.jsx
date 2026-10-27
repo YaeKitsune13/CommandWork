@@ -5,7 +5,12 @@ import Catalog_window from "./views/Catalog/Catalog_window";
 import Login_window from "./views/Login/Login_window";
 import Register_window from "./views/Register_window/Register_window";
 import Player from "./components/player/player";
-
+import redfangCover from '../assets/images/redfang.jpg';
+import redfangSong from '../assets/music/redfang.m4a';
+import Profile_window from "./views/Profile/Profile_window";
+import Settings_window from "./views/Settings_window/Settings_window";
+import MyTracks_window from "./views/MyTracks_window/MyTracks_window";
+import MyPlaylists_window from "./views/MyPlaylists_window/MyPlaylists_window";
 function App() {
   const [role, setRole] = useState("guest");
   const [currentView, setCurrentView] = useState("catalog");
@@ -21,11 +26,13 @@ function App() {
   const currentTrack = {
     title: "prehistoric dogs",
     artist: "red fang",
-    cover: "./src/assets/images/redfang.jpg",
+    cover: redfangCover,
+    audioUrl: redfangSong 
+
   };
   const handleNavigate = (route) => {
     console.log("Navigate →", route);
-    setCurrentView("catalog");
+    setCurrentView(route);
   };
 
   const handleAuthSuccess = (newRole) => {
@@ -61,6 +68,10 @@ function App() {
               onCancel={() => setCurrentView("catalog")}
             />
           )}
+          {currentView == "profile" && <Profile_window />}
+          {currentView == "settings" && <Settings_window />}
+          {currentView == "my-tracks" && <MyTracks_window />}
+          {currentView == "my-playlists" && <MyPlaylists_window />}
         </div>
 
         <div className="debug-row">

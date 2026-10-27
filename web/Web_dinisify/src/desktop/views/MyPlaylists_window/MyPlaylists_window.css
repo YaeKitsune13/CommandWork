@@ -1,0 +1,11 @@
+.my-playlists { padding: 40px; color: #fff; }
+.my-playlists__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.playlist-grid { display: flex; gap: 20px; flex-wrap: wrap; }
+.playlist-card {
+  background: #141418; padding: 16px; border-radius: 12px; border: 1px solid #1f1f23;
+  width: 180px; cursor: pointer; transition: 0.2s;
+}
+.playlist-card:hover { background: #1a1a1f; border-color: #E5383B; transform: translateY(-4px); }
+.playlist-card__cover { width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #1f1f23, #2a2a30); border-radius: 8px; margin-bottom: 12px; }
+.playlist-card h3 { margin: 0 0 4px 0; font-size: 1.1rem; }
+.playlist-card p { margin: 0; font-size: 0.85rem; color: #8a8a8a; }
