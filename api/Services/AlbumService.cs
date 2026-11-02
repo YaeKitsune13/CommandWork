@@ -7,8 +7,8 @@ namespace api.Services;
 
 public interface IAlbumService
 {
-    Task<AlbumResponseDto> CreateAsync(AlbumCreateDto dto, ulong userId); 
-    
+    Task<AlbumResponseDto> CreateAsync(AlbumCreateDto dto, ulong userId);
+
     Task<AlbumResponseDto> GetAsync(ulong id);
     Task<IEnumerable<AlbumResponseDto>> GetAllAsync(string? search);
     Task EditAsync(AlbumEditDto dto);
@@ -25,7 +25,7 @@ public class AlbumService : IAlbumService
         _webRoot = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
     }
 
-    private IQueryable<Album> Alive => _db.Albums; 
+    private IQueryable<Album> Alive => _db.Albums;
 
     public async Task<AlbumResponseDto> CreateAsync(AlbumCreateDto dto, ulong userId)
     {
@@ -47,32 +47,35 @@ public class AlbumService : IAlbumService
 
         _db.Albums.Add(album);
         await _db.SaveChangesAsync();
+        await _db.Entry(album).Reference(a => a.Artist).LoadAsync();
         return ToDto(album);
     }
 
     public async Task<AlbumResponseDto> GetAsync(ulong id)
     {
         var album = await Alive
-            .Include(a => a.Musics)
+            .Include(a => a.Artist)
+            .Include(a => a.Musics).ThenInclude(m => m.Artist)
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == id)
             ?? throw new KeyNotFoundException("Альбом не найден!");
-        
+
         return ToDto(album);
     }
 
-   public async Task<IEnumerable<AlbumResponseDto>> GetAllAsync(string? search)
-{
-    var query = Alive
-        .Include(a => a.Musics) 
-        .AsNoTracking();
+    public async Task<IEnumerable<AlbumResponseDto>> GetAllAsync(string? search)
+    {
+        var query = Alive
+            .Include(a => a.Artist)
+            .Include(a => a.Musics).ThenInclude(m => m.Artist)
+            .AsNoTracking();
 
-    if (!string.IsNullOrEmpty(search))
-        query = query.Where(a => a.Name.Contains(search));
+        if (!string.IsNullOrEmpty(search))
+            query = query.Where(a => a.Name.Contains(search));
 
-    var albums = await query.ToListAsync();
-    return albums.Select(ToDto);
-}
+        var albums = await query.ToListAsync();
+        return albums.Select(ToDto);
+    }
 
     public async Task EditAsync(AlbumEditDto dto)
     {
@@ -84,8 +87,8 @@ public class AlbumService : IAlbumService
 
         album.Name = dto.Name;
         album.ArtistId = dto.ArtistId;
-        
-        if (dto.ReleaseDate.HasValue) 
+
+        if (dto.ReleaseDate.HasValue)
             album.ReleaseDate = DateOnly.FromDateTime(dto.ReleaseDate.Value);
 
         await _db.SaveChangesAsync();
@@ -118,11 +121,15 @@ public class AlbumService : IAlbumService
             a.Id,
             a.Name,
             a.ArtistId,
+            a.Artist?.Name ?? "",
             a.Image,
             releaseDateTime,
-            a.Musics?.Select(m => new TrackResponseDto {
+            a.Musics?.Select(m => new TrackResponseDto
+            {
                 Id = m.Id,
                 Name = m.Name,
+                ArtistId = m.ArtistId,
+                ArtistName = m.Artist?.Name,
                 FileUrl = m.FileUrl
             }).ToList()
         );

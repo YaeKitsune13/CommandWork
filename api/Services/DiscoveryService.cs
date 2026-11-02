@@ -17,7 +17,6 @@ public class DiscoveryService : IDiscoveryService
 
     public DiscoveryService(CoopProjectContext db) => _db = db;
 
-    // GET /search?query=...
     public async Task<SearchResultDto> SearchAsync(string query)
     {
         if (string.IsNullOrWhiteSpace(query))
@@ -46,7 +45,6 @@ public class DiscoveryService : IDiscoveryService
         return new SearchResultDto(tracks, artists, albums);
     }
 
-    // GET /charts?period=week&genreId=1
     public async Task<List<ChartItemDto>> GetChartsAsync(string? period, ulong? genreId, int limit)
     {
         limit = Math.Clamp(limit, 1, 100);
@@ -101,12 +99,10 @@ public class DiscoveryService : IDiscoveryService
         return result;
     }
 
-    // GET /recommendations
     public async Task<List<TrackSearchDto>> GetRecommendationsAsync(ulong? currentUserId, int limit)
     {
         limit = Math.Clamp(limit, 1, 50);
 
-        // Для неавторизованных отдаем просто популярные треки
         if (currentUserId is null)
         {
             return await _db.Musics
@@ -119,7 +115,6 @@ public class DiscoveryService : IDiscoveryService
 
         var uid = currentUserId.Value;
 
-        // 1. Собираем жанры, которые юзер слушал или лайкал
         var preferredGenreIds = await _db.UserListeneds
             .Where(l => l.UserId == uid)
             .SelectMany(l => l.Music.Genres.Select(g => g.Id))
@@ -127,14 +122,12 @@ public class DiscoveryService : IDiscoveryService
             .Take(10)
             .ToListAsync();
 
-        // 2. Треки, которые юзер уже слушал
         var listenedTrackIds = await _db.UserListeneds
             .Where(l => l.UserId == uid)
             .Select(l => l.MusicId)
             .Distinct()
             .ToListAsync();
 
-        // 3. Выбираем треки из любимых жанров, которые юзер ещё не слушал
         var recommended = await _db.Musics
             .Where(m => m.DeletedAt == null && m.Status == "approved")
             .Where(m => !listenedTrackIds.Contains(m.Id))
@@ -144,7 +137,6 @@ public class DiscoveryService : IDiscoveryService
             .Select(m => new TrackSearchDto(m.Id, m.Name, m.Artist.Name, m.Image, m.DurationSec))
             .ToListAsync();
 
-        // Если рекомендаций мало — добираем просто популярными треками
         if (recommended.Count < limit)
         {
             var fallback = await _db.Musics

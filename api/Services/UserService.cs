@@ -9,6 +9,7 @@ public interface IUserService
     Task<UserProfileDto> UpdateProfileAsync(ulong id, UpdateProfileDto dto, ulong currentUserId, string currentRole);
     Task ChangePasswordAsync(ulong id, ChangePasswordDto dto, ulong currentUserId);
     Task<PagedResult<HistoryItemDto>> GetHistoryAsync(ulong id, ulong currentUserId, string currentRole, int page, int pageSize);
+    Task RecordListenAsync(ulong id, ulong musicId, ulong currentUserId);
 }
 
 public class UserService : IUserService
@@ -18,7 +19,6 @@ public class UserService : IUserService
 
     public UserService(CoopProjectContext db) => _db = db;
 
-    // GET /users/{id}
     public async Task<UserProfileDto> GetProfileAsync(ulong id, ulong? viewerId, string? viewerRole)
     {
         var user = await FindActiveAsync(id);
@@ -38,7 +38,6 @@ public class UserService : IUserService
             user.CreatedAt);
     }
 
-    // PUT /users/{id}
     public async Task<UserProfileDto> UpdateProfileAsync(
         ulong id, UpdateProfileDto dto, ulong currentUserId, string currentRole)
     {
@@ -87,7 +86,6 @@ public class UserService : IUserService
             user.Role, user.Email, user.Phone, user.CreatedAt);
     }
 
-    // PUT /users/{id}/password
     public async Task ChangePasswordAsync(ulong id, ChangePasswordDto dto, ulong currentUserId)
     {
         if (currentUserId != id)
@@ -107,7 +105,6 @@ public class UserService : IUserService
         await _db.SaveChangesAsync();
     }
 
-    // GET /users/{id}/history
     public async Task<PagedResult<HistoryItemDto>> GetHistoryAsync(
         ulong id, ulong currentUserId, string currentRole, int page, int pageSize)
     {
@@ -140,7 +137,27 @@ public class UserService : IUserService
         return new PagedResult<HistoryItemDto>(items, page, pageSize, total);
     }
 
-    // Пользователь, который существует и не удалён
+    public async Task RecordListenAsync(ulong id, ulong musicId, ulong currentUserId)
+    {
+        if (currentUserId != id)
+            throw new ForbiddenException("Можно записывать только свою историю");
+
+        if (!await _db.Musics.AnyAsync(m => m.Id == musicId && m.DeletedAt == null))
+            throw new NotFoundException("Трек не найден");
+
+        var since = DateTime.UtcNow.AddSeconds(-30);
+        if (await _db.UserListeneds.AnyAsync(l => l.UserId == id && l.MusicId == musicId && l.ListenedAt >= since))
+            return;
+
+        _db.UserListeneds.Add(new UserListened
+        {
+            UserId = id,
+            MusicId = musicId,
+            ListenedAt = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync();
+    }
+
     private async Task<User> FindActiveAsync(ulong id) =>
         await _db.Users.FirstOrDefaultAsync(u => u.Id == id && u.DeletedAt == null)
         ?? throw new NotFoundException("Пользователь не найден");

@@ -7,16 +7,13 @@ namespace api.Services;
 
 public interface ITrackService
 {
-    Task<TrackResponseDto> UploadAsync(TrackUploadDto dto);
+    Task<TrackResponseDto> UploadAsync(TrackUploadDto dto, ulong ownerId);
     Task<TrackResponseDto> GetAsync(ulong id);
     Task<TrackSoundDto> GetSoundAsync(ulong id);
     Task DeleteAsync(ulong id);
     Task EditAsync(TrackEditDto dto);
 }
 
-/// <summary>
-/// Ошибки: KeyNotFoundException -> 404, ArgumentException -> 400 (ловит контроллер).
-/// </summary>
 public class TrackService : ITrackService
 {
     private static readonly Dictionary<string, string> AudioTypes = new()
@@ -29,7 +26,7 @@ public class TrackService : ITrackService
 
     private static readonly HashSet<string> ImageExtensions = new() { ".jpg", ".jpeg", ".png", ".webp" };
 
-    private readonly CoopProjectContext _db; 
+    private readonly CoopProjectContext _db;
     private readonly string _webRoot;
 
     public TrackService(CoopProjectContext db, IWebHostEnvironment env)
@@ -40,7 +37,7 @@ public class TrackService : ITrackService
 
     private IQueryable<Music> Alive => _db.Musics.Where(m => m.DeletedAt == null);
 
-    public async Task<TrackResponseDto> UploadAsync(TrackUploadDto dto)
+    public async Task<TrackResponseDto> UploadAsync(TrackUploadDto dto, ulong ownerId)
     {
         if (dto.AudioFile.Length == 0)
             throw new ArgumentException("Файл не прикреплён");
@@ -55,7 +52,7 @@ public class TrackService : ITrackService
 
         await EnsureRelationsExistAsync(dto.ArtistId, dto.AlbumId);
 
-        if (!await _db.Users.AnyAsync(u => u.Id == dto.OwnerId))
+        if (!await _db.Users.AnyAsync(u => u.Id == ownerId && !u.IsBlocked && u.DeletedAt == null))
             throw new ArgumentException("Пользователь не найден");
 
         var fileUrl = await SaveFileAsync(dto.AudioFile, "music");
@@ -65,7 +62,7 @@ public class TrackService : ITrackService
         {
             Name = dto.Name,
             ArtistId = dto.ArtistId,
-            OwnerId = dto.OwnerId,
+            OwnerId = ownerId,
             AlbumId = dto.AlbumId,
             FileUrl = fileUrl,
             Image = imageUrl,
@@ -75,12 +72,13 @@ public class TrackService : ITrackService
 
         _db.Musics.Add(music);
         await _db.SaveChangesAsync();
+        await _db.Entry(music).Reference(m => m.Artist).LoadAsync(); // для ArtistName
         return ToDto(music);
     }
 
     public async Task<TrackResponseDto> GetAsync(ulong id)
     {
-        var music = await Alive.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id)
+        var music = await Alive.Include(m => m.Artist).AsNoTracking().FirstOrDefaultAsync(m => m.Id == id)
             ?? throw new KeyNotFoundException("Не найдена песня!");
         return ToDto(music);
     }
@@ -154,6 +152,7 @@ public class TrackService : ITrackService
         Id = m.Id,
         Name = m.Name,
         ArtistId = m.ArtistId,
+        ArtistName = m.Artist?.Name,
         OwnerId = m.OwnerId,
         AlbumId = m.AlbumId,
         FileUrl = m.FileUrl,
