@@ -24,7 +24,7 @@ public class ExceptionMiddleware
         {
             var status = ex switch
             {
-                NotFoundException => StatusCodes.Status404NotFound,
+                NotFoundException or KeyNotFoundException => StatusCodes.Status404NotFound,
                 ForbiddenException => StatusCodes.Status403Forbidden,
                 ConflictException => StatusCodes.Status409Conflict,
                 BadRequestException => StatusCodes.Status400BadRequest,

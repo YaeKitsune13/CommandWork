@@ -18,7 +18,8 @@ builder.Services.AddCors(options =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .WithExposedHeaders("X-Refreshed-Token");
     });
 });
 
@@ -41,18 +42,33 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
-        options.DisableAgent();
+        // options.DisableAgent();
     });
 }
 else
 {
     app.UseHttpsRedirection();
 }
-app.UseMiddleware<ExceptionMiddleware>(); 
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseRouting();
 app.UseCors("AllowSpecificOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.Use(async (ctx, next) =>
+{
+    if (ctx.User.Identity?.IsAuthenticated == true)
+    {
+        var fresh = JWTSetup.RefreshToken(ctx.User);
+        if (fresh is not null)
+            ctx.Response.OnStarting(() =>
+            {
+                ctx.Response.Headers["X-Refreshed-Token"] = fresh;
+                return Task.CompletedTask;
+            });
+    }
+    await next();
+});
 
 app.MapControllers();
 

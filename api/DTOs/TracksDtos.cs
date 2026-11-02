@@ -11,9 +11,6 @@ public class TrackUploadDto
     [Required(ErrorMessage = "Артист обязателен")]
     public ulong ArtistId { get; set; }
 
-    [Required]
-    public ulong OwnerId { get; set; }
-
     public ulong? AlbumId { get; set; }
 
     [Required(ErrorMessage = "Файл не прикреплён")]
@@ -46,6 +43,7 @@ public class TrackResponseDto
     public ulong Id { get; set; }
     public string Name { get; set; } = null!;
     public ulong ArtistId { get; set; }
+    public string? ArtistName { get; set; }
     public ulong OwnerId { get; set; }
     public ulong? AlbumId { get; set; }
     public string FileUrl { get; set; } = null!;

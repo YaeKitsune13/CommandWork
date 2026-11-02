@@ -18,13 +18,11 @@ public class SocialController : ControllerBase
             ? id
             : throw new ForbiddenException("Не авторизован");
 
-    // POST api/users/{id}/follow
     [Authorize(Policy = "Registered")]
     [HttpPost("{id}/follow")]
     public async Task<IActionResult> Follow(ulong id) =>
         Ok(await _social.FollowAsync(id, CurrentId));
 
-    // DELETE api/users/{id}/follow
     [Authorize(Policy = "Registered")]
     [HttpDelete("{id}/follow")]
     public async Task<IActionResult> Unfollow(ulong id)
@@ -33,7 +31,6 @@ public class SocialController : ControllerBase
         return NoContent();
     }
 
-    // PUT api/users/{id}/followers/{followerId}
     [Authorize(Policy = "Registered")]
     [HttpPut("{id}/followers/{followerId}")]
     public async Task<IActionResult> AcceptFollow(ulong id, ulong followerId)
@@ -42,13 +39,11 @@ public class SocialController : ControllerBase
         return NoContent();
     }
 
-    // GET api/users/{id}/followers
     [AllowAnonymous]
     [HttpGet("{id}/followers")]
     public async Task<IActionResult> GetFollowers(ulong id) =>
         Ok(await _social.GetFollowersAsync(id));
 
-    // GET api/users/{id}/following
     [AllowAnonymous]
     [HttpGet("{id}/following")]
     public async Task<IActionResult> GetFollowing(ulong id) =>

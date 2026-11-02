@@ -6,6 +6,7 @@ public record AlbumResponseDto(
     ulong Id, 
     string Name, 
     ulong ArtistId, 
+    string ArtistName,
     string? Image, 
     DateTime ReleaseDate,
     List<TrackResponseDto>? Tracks 
