@@ -1,0 +1,31 @@
+.settings { padding: 40px; color: #fff; max-width: 600px; }
+.settings__title { margin-bottom: 30px; }
+.settings__card {
+  background: #141418;
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px solid #1f1f23;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.settings__group { display: flex; flex-direction: column; gap: 8px; }
+.settings__group label { font-size: 0.9rem; color: #8a8a8a; }
+.settings__group input {
+  background: #0a0a0c;
+  border: 1px solid #1f1f23;
+  padding: 12px;
+  border-radius: 8px;
+  color: #fff;
+}
+.settings__save-btn {
+  background: #E5383B;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.settings__save-btn:hover { background: #ff7733; }

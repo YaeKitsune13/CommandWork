@@ -67,13 +67,7 @@ function Sidebar({ auth, onLogoClick, onLoginClick, onNavigate }) {
             ))}
           </nav>
 
-          <div className="sidebar__footer">
-            <div className="sidebar__avatar">U</div>
-            <div>
-              <div className="sidebar__user">Guest User</div>
-              <div className="sidebar__user-sub">Creator plan</div>
-            </div>
-          </div>
+         
         </>
       )}
     </aside>
