@@ -42,7 +42,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
-        options.DisableAgent();
+        // options.DisableAgent();
     });
 }
 else
