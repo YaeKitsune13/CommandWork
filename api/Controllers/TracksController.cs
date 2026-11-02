@@ -2,11 +2,12 @@ using api.Dtos;
 using api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace api.Controller;
 
 [ApiController]
-[Route("api/music")] 
+[Route("api/music")]
 public class TracksController : ControllerBase
 {
     private readonly ITrackService _tracks;
@@ -16,13 +17,18 @@ public class TracksController : ControllerBase
         _tracks = tracks;
     }
 
-    // [Authorize]
+    private ulong CurrentId =>
+        ulong.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
+            ? id
+            : throw new ForbiddenException("Не авторизован");
+
+    [Authorize(Policy = "Registered")]
     [HttpPost]
     [Consumes("multipart/form-data")]
     public Task<IActionResult> Upload([FromForm] TrackUploadDto dto) =>
         Handle(async () =>
         {
-            var track = await _tracks.UploadAsync(dto);
+            var track = await _tracks.UploadAsync(dto, CurrentId); // владелец берётся из JWT
             return Ok(new { message = "Вы успешно выложили песню", music = track });
         });
 
@@ -38,7 +44,6 @@ public class TracksController : ControllerBase
             return PhysicalFile(sound.PhysicalPath, sound.ContentType, enableRangeProcessing: true);
         });
 
-    // [Authorize]
     [HttpDelete("delete")]
     public Task<IActionResult> Delete([FromQuery] ulong id) =>
         Handle(async () =>
@@ -47,7 +52,6 @@ public class TracksController : ControllerBase
             return Ok(new { message = "Песня удалена!" });
         });
 
-    // [Authorize]
     [HttpPut("edit")]
     public Task<IActionResult> Edit([FromBody] TrackEditDto dto) =>
         Handle(async () =>
