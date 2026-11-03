@@ -50,14 +50,18 @@ public class AuthController : ControllerBase
     [HttpPost("guest")]
     public IActionResult Guest() => Ok(new TokenDto(JWTSetup.CreateGuestToken()));
 
-    [Authorize]
-    [HttpGet("me")]
-    public IActionResult Me()
-    {
-        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var name = User.Identity!.Name;
-        var role = User.FindFirstValue(ClaimTypes.Role);
+   [Authorize]
+[HttpGet("me")]
+public IActionResult Me()
+{
+    var idText = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var role = User.FindFirstValue(ClaimTypes.Role);
 
-        return Ok(new { id, name, role });
+    if (!ulong.TryParse(idText, out var id))
+    {
+        return Ok(new { isGuest = true, id = (ulong?)null, name = "Гость", role = role ?? "guest" });
     }
+
+    return Ok(new { isGuest = false, id, name = User.Identity!.Name, role });
+}
 }

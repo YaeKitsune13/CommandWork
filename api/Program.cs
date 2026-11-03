@@ -27,6 +27,7 @@ builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IAlbumService, AlbumService>();
 builder.Services.AddScoped<IComplaintService, ComplaintService>();
 builder.Services.AddScoped<IModeratorService, ModeratorService>();
+builder.Services.AddScoped<IPlaylistService, PlaylistsService>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<CoopProjectContext>(options =>
@@ -37,6 +38,7 @@ builder.Services.AddDbContext<CoopProjectContext>(options =>
 
 var app = builder.Build();
 
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -44,6 +46,9 @@ if (app.Environment.IsDevelopment())
     {
         // options.DisableAgent();
     });
+     using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<CoopProjectContext>();
+    SeedData.Run(db);
 }
 else
 {

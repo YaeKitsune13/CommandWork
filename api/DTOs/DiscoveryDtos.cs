@@ -11,8 +11,8 @@ public record SearchResultDto(
 
 public record ChartItemDto(
     int Rank,
-    ulong TrackId,
-    string TrackName,
+    ulong Id,
+    string Name,
     string ArtistName,
     string? Image,
     uint? DurationSec,
