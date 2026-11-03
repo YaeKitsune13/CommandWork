@@ -11,13 +11,11 @@ export default function Profile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile, followers, following, loading, error, reload } = useProfile(id);
-  const { token, role } = useAuth();
+  const { token, role, userId } = useAuth();
   const { follow, unfollow, loading: followLoading, error: followError } = useFollow(reload);
   const [isFollowing, setIsFollowing] = useState(false);
-  const isOwnProfile = String(userId) === String(id);
-  const canFollow = !!token && role !== 'guest';
-  const avatarUrl = getImageUrl(profile.image);
-  const goBack = () => {
+  
+    const goBack = () => {
     if (window.history.length > 1) navigate(-1);
     else navigate('/');
   };
@@ -26,12 +24,15 @@ export default function Profile() {
   if (error) {
     return (
       <div className="profile">
-        <button onClick={goBack} className="profile__back">← Назад</button>
+        <button onClick={goBack} className="profile__back">(-- Назад</button>
         <p className="profile__error">{error}</p>
       </div>
     );
   }
   if (!profile) return null;
+  const isOwnProfile = String(userId) === String(id);
+  const canFollow = !!token && role !== 'guest';
+  const avatarUrl = getImageUrl(profile.image);
 
   const handleFollow = async () => {
     const res = isFollowing ? await unfollow(profile.id) : await follow(profile.id);

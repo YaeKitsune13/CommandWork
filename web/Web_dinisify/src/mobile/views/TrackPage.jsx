@@ -20,7 +20,7 @@ export default function TrackPage() {
   
   if (error) return (
     <div className="track-page">
-      <button onClick={goBack} className="track-page__back">← Назад</button>
+      <button onClick={goBack} className="track-page__back">(-- Назад</button>
       <p className="track-page__error">{error}</p>
     </div>
   );
@@ -43,7 +43,7 @@ export default function TrackPage() {
 
   return (
     <div className="track-page">
-      <button onClick={goBack} className="track-page__back">← Назад</button>
+      <button onClick={goBack} className="track-page__back">(-- Назад</button>
 
       <header className="track-page__header">
         <div className="track-page__cover">

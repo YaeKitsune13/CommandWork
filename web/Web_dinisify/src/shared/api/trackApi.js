@@ -5,14 +5,14 @@ export const trackApi = {
 
   /**
    * Загрузка трека с прогрессом.
-   * @param {FormData} formData — содержит AudioFile, Name, ArtistId, OwnerId, [AlbumId], [Image]
+   * @param {FormData} formData 
    * @param {(percent:number)=>void} onProgress
    * @returns {Promise<{id:number, ...}>}
    */
   upload: (formData, onProgress) =>
     new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${API_URL}/api/music`);
+      xhr.open('POST', `/api/music`);
 
       const token = localStorage.getItem('token');
       if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);

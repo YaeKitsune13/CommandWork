@@ -26,6 +26,7 @@ export default function Home() {
     <div className="home">
       <header className="home__header">
         <h1>Dinisify</h1>
+
         <span className="home__role">{isGuest ? 'гость' : 'пользователь'}</span>
       </header>
       <SearchBar value={search} onChange={handleSearchChange} />

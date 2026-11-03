@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useMediaQuery } from './useMediaQuery';
 
-const MOBILE_URL = import.meta.env.VITE_MOBILE_URL; // из .env
+const MOBILE_URL = import.meta.env.VITE_MOBILE_URL;
 const DESKTOP_URL = import.meta.env.VITE_DESKTOP_URL;
 
 export function useSiteRedirect() {
