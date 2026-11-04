@@ -1,39 +1,28 @@
 import { useState } from "react";
 import { UserPlus, ArrowLeft } from "lucide-react";
 import "./Register_window.css";
-
-function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
+import { api } from "shared/hooks/client.js";
+import { imageUrl, onImgError } from "shared/fallbackImage.js";
+function Register_window({ auth, onRegisterSuccess, onGoToLogin, onCancel }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (
-      username.length == 0 ||
-      password.length == 0 ||
-      confirmPassword.length == 0
-    ) {
-      setError("Пожалуйста, заполните все поля.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Пароли не совпадают.");
-      return;
-    }
-
+    if (!username || !password || !confirmPassword)
+      return setError("Пожалуйста, заполните все поля.");
+    if (password !== confirmPassword) return setError("Пароли не совпадают.");
     setError("");
-    // =====================================================================
-    // В реальном приложении здесь будет POST-запрос к /auth/register
-    onRegisterSuccess("user");
-    // =====================================================================
+
+    const result = await auth.register(username, password);
+    if (result.success) onRegisterSuccess();
+    else setError(result.error);
   };
 
   return (
-    <div className="register-container"> {/* Fixed lowercase 'r' */}
+    <div className="register-container">
       <button type="button" className="register-back-btn" onClick={onCancel}>
         <ArrowLeft size={18} /> Вернуться в каталог
       </button>
@@ -41,7 +30,6 @@ function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
       <div className="register-card">
         <h2 className="register-title">Создать аккаунт</h2>
         <p className="register-subtitle">Присоединяйтесь к Dinisify</p>
-
         {error && <div className="register-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="register-form">
@@ -55,7 +43,6 @@ function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
               placeholder="Введите ваш email"
             />
           </div>
-
           <div className="register-input-group">
             <label htmlFor="password">Пароль</label>
             <input
@@ -66,7 +53,6 @@ function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
               placeholder="Введите пароль"
             />
           </div>
-
           <div className="register-input-group">
             <label htmlFor="confirmPassword">Подтвердите пароль</label>
             <input
@@ -77,9 +63,13 @@ function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
               placeholder="Повторите пароль"
             />
           </div>
-
-          <button type="submit" className="register-submit-btn">
-            <UserPlus size={18} /> Зарегистрироваться
+          <button
+            type="submit"
+            className="register-submit-btn"
+            disabled={auth.loading}
+          >
+            <UserPlus size={18} />{" "}
+            {auth.loading ? "Регистрация..." : "Зарегистрироваться"}
           </button>
         </form>
 
@@ -93,5 +83,4 @@ function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
     </div>
   );
 }
-
 export default Register_window;

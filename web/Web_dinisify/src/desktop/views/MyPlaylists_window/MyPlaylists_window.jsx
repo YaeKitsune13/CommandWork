@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
-import './MyPlaylists_window.css';
-
+import { useState } from "react";
+import { Plus, X } from "lucide-react";
+import "./MyPlaylists_window.css";
+import { api } from "shared/hooks/client.js";
+import { imageUrl, onImgError } from "shared/fallbackImage.js";
 function MyPlaylists_window() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -29,12 +30,25 @@ function MyPlaylists_window() {
           <div className="modal-content">
             <div className="modal-header">
               <h2>Новый плейлист</h2>
-              <button onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+              <button onClick={() => setIsModalOpen(false)}>
+                <X size={20} />
+              </button>
             </div>
-            <form className="modal-form" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
+            <form
+              className="modal-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setIsModalOpen(false);
+              }}
+            >
               <input type="text" placeholder="Название плейлиста" required />
-              <textarea placeholder="Описание (необязательно)" rows="3"></textarea>
-              <button type="submit" className="btn-primary">Создать</button>
+              <textarea
+                placeholder="Описание (необязательно)"
+                rows="3"
+              ></textarea>
+              <button type="submit" className="btn-primary">
+                Создать
+              </button>
             </form>
           </div>
         </div>

@@ -1,191 +1,184 @@
-import { useState } from 'react';
-import { Search, Play, Heart, MoreHorizontal } from 'lucide-react';
-import './Catalog_window.css';
+import { useEffect, useState } from "react";
+import { Search, Play, Heart, MoreHorizontal } from "lucide-react";
+import { api } from "shared/hooks/client.js";
+import { imageUrl, onImgError } from "shared/fallbackImage.js";
+import "./Catalog_window.css";
 
-import mfdoomImg from '/src/assets/images/MFDOOM.jpg';
-import madnessImg from '/src/assets/images/nightboattocairo.jpg';
-import redFangImg from '/src/assets/images/redfang.jpg';
-import saturnsImg from '/src/assets/images/saturns_children.jpg';
-import earthWindImg from '/src/assets/images/septembre.jpg';
-import tylerImg from '/src/assets/images/tylerthecreator.jpg';
+// Defensive extractor: controllers may return a bare array or an envelope
+// like { items | data | tracks | music: [...] }. Handle all.
+function extractList(result) {
+  if (!result) return [];
+  if (Array.isArray(result)) return result;
+  for (const k of ["items", "data", "tracks", "music", "results"]) {
+    if (Array.isArray(result[k])) return result[k];
+  }
+  return [];
+}
 
-function Catalog_window() {
-  const [searchQuery, setSearchQuery] = useState('');
+// Charts may wrap each item as { track: {...}, playCount: N } or return
+// plain track objects. Normalize both to a flat track shape.
+function toTrack(item) {
+  const src = item?.track ?? item ?? {};
+  return {
+    id: src.id ?? src.track_id ?? src.music_id,
+    name: src.name ?? src.title,
+    author: src.author ?? src.artist,
+    genre: src.genre,
+    image: src.image ?? src.cover,
+  };
+}
 
-  // =====================================================================
-  
-  const mockAuthors = [
-    { id: 'a1', name: 'MF DOOM', tracks: 12, color: '#E5383B', photo: mfdoomImg },
-    { id: 'a2', name: 'MADNESS', tracks: 8, color: '#4A90D9', photo: madnessImg },
-    { id: 'a3', name: 'Red Fang', tracks: 21, color: '#F5A623', photo: redFangImg },
-    { id: 'a4', name: 'Electric Wizards', tracks: 5, color: '#7B61FF', photo: saturnsImg },
-    { id: 'a5', name: 'earth, fire & wind', tracks: 17, color: '#2ECC71', photo: earthWindImg },
-    { id: 'a6', name: 'Tyler the Creator', tracks: 9, color: '#E91E63', photo: tylerImg },
-    { id: 'a7', name: 'MF DOOM', tracks: 12, color: '#E5383B', photo: mfdoomImg },
-    { id: 'a8', name: 'MADNESS', tracks: 8, color: '#4A90D9', photo: madnessImg },
-    { id: 'a9', name: 'Red Fang', tracks: 21, color: '#F5A623', photo: redFangImg },
-    { id: 'a10', name: 'Electric Wizards', tracks: 5, color: '#7B61FF', photo: saturnsImg },
-    { id: 'a11', name: 'earth, fire & wind', tracks: 17, color: '#2ECC71', photo: earthWindImg },
-    { id: 'a12', name: 'Tyler the Creator', tracks: 9, color: '#E91E63', photo: tylerImg },
-    { id: 'a13', name: 'MF DOOM', tracks: 12, color: '#E5383B', photo: mfdoomImg },
-    { id: 'a14', name: 'MADNESS', tracks: 8, color: '#4A90D9', photo: madnessImg },
-    { id: 'a15', name: 'Red Fang', tracks: 21, color: '#F5A623', photo: redFangImg },
-    { id: 'a16', name: 'Electric Wizards', tracks: 5, color: '#7B61FF', photo: saturnsImg },
-    { id: 'a17', name: 'earth, fire & wind', tracks: 17, color: '#2ECC71', photo: earthWindImg },
-    { id: 'a18', name: 'Tyler the Creator', tracks: 9, color: '#E91E63', photo: tylerImg },
-  ];
+function Catalog_window({ onPlayTrack }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const mockTracks = [
-    {
-      id: 't1',
-      title: 'rap snitch knishes',
-      artist: 'MF DOOM',
-      genre: 'Rap',
-      duration: '3:42',
-      image:mfdoomImg
-    },
-    {
-      id: 't2',
-      title: 'Prehistoric dogs',
-      artist: 'Red Fang',
-      genre: 'Stoner Metal',
-      duration: '4:18',
-      image:redFangImg
-    },
-    {
-      id: 't3',
-      title: ' Saturns Children',
-      artist: 'Electric Wizards',
-      genre: 'Doom metal',
-      duration: '5:01',
-      image:saturnsImg
-    },
-     {
-      id: 't4',
-      title: 'rap snitch knishes',
-      artist: 'MF DOOM',
-      genre: 'Rap',
-      duration: '3:42',
-      image:mfdoomImg
-    },
-    {
-      id: 't5',
-      title: 'Prehistoric dogs',
-      artist: 'Red Fang',
-      genre: 'Stoner Metal',
-      duration: '4:18',
-      image:redFangImg
-    },
-    {
-      id: 't6',
-      title: ' Saturns Children',
-      artist: 'Electric Wizards',
-      genre: 'Doom metal',
-      duration: '5:01',
-      image:saturnsImg
-    },
-     {
-      id: 't7',
-      title: 'rap snitch knishes',
-      artist: 'MF DOOM',
-      genre: 'Rap',
-      duration: '3:42',
-      image:mfdoomImg
-    },
-    {
-      id: 't8',
-      title: 'Prehistoric dogs',
-      artist: 'Red Fang',
-      genre: 'Stoner Metal',
-      duration: '4:18',
-      image:redFangImg
-    },
-    {
-      id: 't9',
-      title: ' Saturns Children',
-      artist: 'Electric Wizards',
-      genre: 'Doom metal',
-      duration: '5:01',
-      image:saturnsImg
-    },
-    
-  ];
-  // =====================================================================
+  const loadDefault = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      // /charts accepts empty params and is AllowAnonymous.
+      const result = await api.get("/charts?period=week&limit=50", {
+        auth: false,
+      });
+      const items = extractList(result)
+        .map(toTrack)
+        .filter((t) => t.id);
+      setTracks(items);
+    } catch (err) {
+      setError(err.message || "Не удалось загрузить каталог");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const runSearch = async (query) => {
+    const q = query.trim();
+    if (!q) {
+      // Empty query → don't hit /search (it 400s). Fall back to the default list.
+      return loadDefault();
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const result = await api.get(`/search?query=${encodeURIComponent(q)}`, {
+        auth: false,
+      });
+      const items = extractList(result)
+        .map(toTrack)
+        .filter((t) => t.id);
+      setTracks(items);
+    } catch (err) {
+      setError(err.message || "Ошибка поиска");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDefault();
+  }, []);
+
+  const authors = Array.from(
+    new Map(
+      tracks.map((t) => [
+        t.author,
+        { name: t.author, count: 0, photo: t.image },
+      ]),
+    ).values(),
+  );
+  tracks.forEach((t) => {
+    const a = authors.find((x) => x.name === t.author);
+    if (a) a.count += 1;
+  });
 
   return (
     <div className="catalog">
-      
       <div className="catalog__search-container">
         <div className="catalog__search-wrapper">
           <Search size={18} className="catalog__search-icon" />
           <input
-            type="text"
             className="catalog__search-input"
             placeholder="Поиск Песен, Артистов, Плейлистов"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && loadTracks(searchQuery)}
           />
         </div>
-        <button type="button" className="catalog__search-btn">
+        <button
+          className="catalog__search-btn"
+          onClick={() => loadTracks(searchQuery)}
+        >
           Search
         </button>
       </div>
 
       <hr className="catalog__divider" />
 
-      <section className="catalog__section">
-        <div className="catalog__authors">
-          {mockAuthors.map((author) => (
-            <button key={author.id} type="button" className="author-card">
-             <div className="author-card__image-wrapper">
-                <img 
-                  src={author.photo} 
-                  alt={author.name} 
-                  className="author-card__image" 
-                />
-              </div>
-              <span className="author-card__name">{author.name}</span>
-              <span className="author-card__count">{author.tracks} Песен</span>
-            </button>
-          ))}
-        </div>
-      </section>
+      {loading && <p>Загрузка...</p>}
+      {error && <p style={{ color: "salmon" }}>{error}</p>}
 
-      <hr className="catalog__divider" />
+      {!loading && !error && (
+        <>
+          <section className="catalog__section">
+            <div className="catalog__authors">
+              {authors.map((a) => (
+                <button key={a.name} className="author-card" type="button">
+                  <div className="author-card__image-wrapper">
+                    <img
+                      src={imageUrl(a.photo)}
+                      onError={onImgError}
+                      alt={a.name}
+                      className="author-card__image"
+                    />
+                  </div>
+                  <span className="author-card__name">{a.name || "—"}</span>
+                  <span className="author-card__count">{a.count} Песен</span>
+                </button>
+              ))}
+            </div>
+          </section>
 
-      <section className="catalog__section">
-        <ul className="catalog__tracks">
-          {mockTracks.map((track) => (
-            <li key={track.id} className="track-row">
-              <button type="button" className="track-row__play" aria-label="Play">
-                <Play size={18} />
-              </button>
+          <hr className="catalog__divider" />
 
-              <div className="track-row__cover" >
-                <img src={track.image} alt="almub" />
-              </div>
-
-              <div className="track-row__info">
-                <span className="track-row__title">{track.title}</span>
-                <span className="track-row__artist">{track.artist}</span>
-              </div>
-
-              <span className="track-row__genre">{track.genre}</span>
-              <span className="track-row__duration">{track.duration}</span>
-
-              <button type="button" className="track-row__action" aria-label="Like">
-                <Heart size={16} />
-              </button>
-              <button type="button" className="track-row__action" aria-label="More">
-                <MoreHorizontal size={16} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
+          <section className="catalog__section">
+            <ul className="catalog__tracks">
+              {tracks.map((t) => (
+                <li key={t.id} className="track-row">
+                  <button
+                    className="track-row__play"
+                    onClick={() => onPlayTrack?.(t)}
+                    aria-label="Play"
+                  >
+                    <Play size={18} />
+                  </button>
+                  <div className="track-row__cover">
+                    <img
+                      src={imageUrl(t.image)}
+                      onError={onImgError}
+                      alt={t.name}
+                    />
+                  </div>
+                  <div className="track-row__info">
+                    <span className="track-row__title">{t.name}</span>
+                    <span className="track-row__artist">{t.author}</span>
+                  </div>
+                  <span className="track-row__genre">{t.genre}</span>
+                  <span className="track-row__duration">—</span>
+                  <button className="track-row__action" aria-label="Like">
+                    <Heart size={16} />
+                  </button>
+                  <button className="track-row__action" aria-label="More">
+                    <MoreHorizontal size={16} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </>
+      )}
     </div>
   );
 }
-
 export default Catalog_window;

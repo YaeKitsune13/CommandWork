@@ -1,14 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
-import { Play, Pause } from 'lucide-react';
-import CometDial from '../../../shared/components/vynill_player/CometDial'; 
-import './player.css';
+import { useState, useRef, useEffect } from "react";
+import { Play, Pause } from "lucide-react";
+import CometDial from "shared/components/vynill_player/CometDial";
+import { imageUrl, onImgError } from "shared/fallbackImage.js";
+import "./player.css";
 
-// Helper to format seconds into M:SS
 function formatTime(seconds) {
   if (isNaN(seconds) || seconds === 0) return "0:00";
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
 }
 
 function Player({ track }) {
@@ -18,12 +18,21 @@ function Player({ track }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
+  // Load new track when id changes
+  useEffect(() => {
+    if (!track?.id || !audioRef.current) return;
+    audioRef.current.src = `http://127.0.0.1:5000/api/music/sound?id=${track.id}`;
+    audioRef.current.load();
+    setCurrentTime(0);
+    setDuration(0);
+    setIsPlaying(false);
+  }, [track?.id]);
+
+  if (!track) return null; // ← the fix
+
   const togglePlay = () => {
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
+    if (isPlaying) audioRef.current.pause();
+    else audioRef.current.play();
     setIsPlaying(!isPlaying);
   };
 
@@ -35,19 +44,15 @@ function Player({ track }) {
 
   const handleVolumeChange = (newVolume) => {
     setVolume(newVolume);
-    audioRef.current.volume = newVolume / 100; 
+    if (audioRef.current) audioRef.current.volume = newVolume / 100;
   };
 
-  useEffect(() => {
-    if (track && track.audioUrl) {
-      audioRef.current.src = track.audioUrl;
-      audioRef.current.load();
-      setCurrentTime(0);
-      setIsPlaying(false);
-    }
-  }, [track]);
-
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  // Support both shapes: API returns { name, author, image }, dummy used { title, artist, cover }
+  const title = track.name ?? track.title ?? "Без названия";
+  const artist = track.author ?? track.artist ?? "";
+  const cover = track.image ?? track.cover ?? null;
 
   return (
     <div className="player-bar">
@@ -59,12 +64,12 @@ function Player({ track }) {
       />
 
       <div className="player__art">
-        <img src={track.cover} alt={track.title} />
+        <img src={imageUrl(cover)} onError={onImgError} alt={title} />
       </div>
 
       <div className="player__info">
-        <span className="player__title">{track.title}</span>
-        <span className="player__artist">{track.artist}</span>
+        <span className="player__title">{title}</span>
+        <span className="player__artist">{artist}</span>
       </div>
 
       <div className="player__vinyl">
@@ -75,11 +80,11 @@ function Player({ track }) {
             min={0}
             max={100}
             size={120}
-            sweep={320}         
-            thickness={6}       
-            accent="#E5383B"    
-            ink="#7e3f3f"      
-            label="Громкость"    
+            sweep={320}
+            thickness={6}
+            accent="#E5383B"
+            ink="#7e3f3f"
+            label="Громкость"
             unit="%"
           />
         </div>
@@ -88,7 +93,7 @@ function Player({ track }) {
           type="button"
           className="player__play-btn"
           onClick={togglePlay}
-          aria-label={isPlaying ? 'Пауза' : 'Играть'}
+          aria-label={isPlaying ? "Пауза" : "Играть"}
         >
           {isPlaying ? <Pause size={24} /> : <Play size={24} />}
         </button>
@@ -96,7 +101,6 @@ function Player({ track }) {
 
       <div className="player__progress-container">
         <span className="player__time">{formatTime(currentTime)}</span>
-        
         <input
           type="range"
           className="player__slider"
@@ -104,9 +108,8 @@ function Player({ track }) {
           max={duration || 100}
           value={currentTime}
           onChange={handleSeek}
-          style={{ '--progress': `${progressPercent}%` }}
+          style={{ "--progress": `${progressPercent}%` }}
         />
-        
         <span className="player__time">{formatTime(duration)}</span>
       </div>
     </div>

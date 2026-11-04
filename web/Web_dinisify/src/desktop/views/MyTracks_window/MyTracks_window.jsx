@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Upload, X } from 'lucide-react';
-import './MyTracks_window.css';
-
+import { useState } from "react";
+import { Upload, X } from "lucide-react";
+import "./MyTracks_window.css";
+import { api } from "shared/hooks/client.js";
+import { imageUrl, onImgError } from "shared/fallbackImage.js";
 function MyTracks_window() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -20,7 +21,9 @@ function MyTracks_window() {
           <div className="track-item__cover" />
           <div className="track-item__info">
             <span className="track-item__title">My First Track</span>
-            <span className="track-item__status status--pending">На модерации</span>
+            <span className="track-item__status status--pending">
+              На модерации
+            </span>
           </div>
         </div>
       </div>
@@ -31,16 +34,26 @@ function MyTracks_window() {
           <div className="modal-content">
             <div className="modal-header">
               <h2>Загрузить трек</h2>
-              <button onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+              <button onClick={() => setIsModalOpen(false)}>
+                <X size={20} />
+              </button>
             </div>
-            <form className="modal-form" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
+            <form
+              className="modal-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setIsModalOpen(false);
+              }}
+            >
               <input type="text" placeholder="Название трека" required />
               <input type="text" placeholder="Жанр" />
               <div className="file-input">
                 <label>Аудиофайл (mp3/wav)</label>
                 <input type="file" accept="audio/*" required />
               </div>
-              <button type="submit" className="btn-primary">Отправить на модерацию</button>
+              <button type="submit" className="btn-primary">
+                Отправить на модерацию
+              </button>
             </form>
           </div>
         </div>
