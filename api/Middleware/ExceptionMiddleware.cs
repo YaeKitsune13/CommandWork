@@ -1,5 +1,3 @@
-namespace api;
-
 public class NotFoundException(string message) : Exception(message);
 public class ForbiddenException(string message, string code = "forbidden") : Exception(message)
 {
