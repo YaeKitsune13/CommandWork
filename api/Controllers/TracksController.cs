@@ -36,6 +36,9 @@ public class TracksController : ControllerBase
     public Task<IActionResult> GetMeta([FromQuery] ulong id) =>
         Handle(async () => Ok(await _tracks.GetAsync(id)));
 
+    [HttpGet("artist/{artistId}")]
+    public async Task<ActionResult<List<TrackResponseDto>>> GetByArtist(ulong artistId)
+        => Ok(await _tracks.GetByArtistAsync(artistId));
     [HttpGet("sound")]
     public Task<IActionResult> GetSound([FromQuery] ulong id) =>
         Handle(async () =>

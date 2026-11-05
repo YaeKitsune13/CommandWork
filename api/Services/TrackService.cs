@@ -10,6 +10,7 @@ public interface ITrackService
     Task<TrackResponseDto> UploadAsync(TrackUploadDto dto, ulong ownerId);
     Task<TrackResponseDto> GetAsync(ulong id);
     Task<TrackSoundDto> GetSoundAsync(ulong id);
+    Task<List<TrackResponseDto>> GetByArtistAsync(ulong artistId);
     Task DeleteAsync(ulong id);
     Task EditAsync(TrackEditDto dto);
 }
@@ -71,14 +72,28 @@ public class TrackService : ITrackService
             AlbumId = dto.AlbumId,
             FileUrl = fileUrl,
             Image = imageUrl,
-            DurationSec = duration,             
+            DurationSec = duration,
             Status = "pending",
             CreatedAt = DateTime.UtcNow
         };
         _db.Musics.Add(music);
         await _db.SaveChangesAsync();
-        await _db.Entry(music).Reference(m => m.Artist).LoadAsync(); 
+        await _db.Entry(music).Reference(m => m.Artist).LoadAsync();
         return ToDto(music);
+    }
+    public async Task<List<TrackResponseDto>> GetByArtistAsync(ulong artistId)
+    {
+        if (!await _db.Artists.AnyAsync(a => a.Id == artistId))
+            throw new KeyNotFoundException("Артист не найден");
+
+        var tracks = await Alive
+            .Include(m => m.Artist)
+            .AsNoTracking()
+            .Where(m => m.ArtistId == artistId)
+            .OrderByDescending(m => m.CreatedAt)
+            .ToListAsync();
+
+        return tracks.Select(ToDto).ToList();
     }
 
     public async Task<TrackResponseDto> GetAsync(ulong id)
@@ -168,21 +183,21 @@ public class TrackService : ITrackService
         CreatedAt = m.CreatedAt
     };
     private uint? ReadDuration(string fileUrl)
-{
-    var path = GetPhysicalPath(fileUrl);
-    if (path == null)
     {
-        return null;
-    }
+        var path = GetPhysicalPath(fileUrl);
+        if (path == null)
+        {
+            return null;
+        }
 
-    try
-    {
-        using var tagFile = TagLib.File.Create(path);
-        return (uint)Math.Round(tagFile.Properties.Duration.TotalSeconds);
+        try
+        {
+            using var tagFile = TagLib.File.Create(path);
+            return (uint)Math.Round(tagFile.Properties.Duration.TotalSeconds);
+        }
+        catch
+        {
+            return null;
+        }
     }
-    catch
-    {
-        return null;
-    }
-}
 }
