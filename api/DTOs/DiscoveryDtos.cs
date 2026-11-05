@@ -1,19 +1,12 @@
 namespace api.Dtos;
 
-public record ArtistSearchDto(ulong Id, string Name, string? Image);
-public record AlbumSearchDto(ulong Id, string Name, string? Image, string ArtistName);
-public record TrackSearchDto(ulong Id, string Name, string ArtistName, string? Image, uint? DurationSec);
-
 public record SearchResultDto(
-    List<TrackSearchDto> Tracks,
-    List<ArtistSearchDto> Artists,
-    List<AlbumSearchDto> Albums);
+    List<TrackResponseDto> Tracks,
+    List<UserBriefDto> Users,
+    List<AlbumResponseDto> Albums,
+    List<PlaylistResponseDto> Playlists);
 
 public record ChartItemDto(
     int Rank,
-    ulong Id,
-    string Name,
-    string ArtistName,
-    string? Image,
-    uint? DurationSec,
-    int ListensCount);
+    int ListensCount,
+    TrackResponseDto Track);

@@ -5,10 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Services;
 
-public interface IComplaintService 
+public interface IComplaintService
 {
-    Task CreateAsync(ComplaintCreateDto dto, ulong reporterId);
-    Task<IEnumerable<ComplaintResponseDto>> GetAllAsync();
+    Task<ComplaintResponseDto> CreateAsync(ComplaintCreateDto dto, ulong reporterId);
 }
 
 public class ComplaintService : IComplaintService
@@ -16,44 +15,59 @@ public class ComplaintService : IComplaintService
     private readonly CoopProjectContext _db;
     public ComplaintService(CoopProjectContext db) => _db = db;
 
-  public async Task CreateAsync(ComplaintCreateDto dto, ulong reporterId)
-{
-    var complaint = new Complaint
+    public async Task<ComplaintResponseDto> CreateAsync(ComplaintCreateDto dto, ulong reporterId)
     {
-        ReporterId = reporterId,
-        Reason = dto.Reason,
-        Status = ComplaintStatuses.Pending,
-        CreatedAt = DateTime.UtcNow,
-        
-        MusicId = null,
-        TargetUserId = null,
-        CommentId = null
-    };
+        if (string.IsNullOrWhiteSpace(dto.Reason))
+            throw new BadRequestException("Укажите причину жалобы");
 
-    if (dto.TargetType == ComplaintTargetType.Track)
-        complaint.MusicId = dto.TargetId;
-    else if (dto.TargetType == ComplaintTargetType.User)
-        complaint.TargetUserId = dto.TargetId;
-    else if (dto.TargetType == ComplaintTargetType.Comment)
-        complaint.CommentId = dto.TargetId;
+        var type = dto.TargetType?.Trim().ToLowerInvariant();
+        if (type is not ("track" or "user" or "comment"))
+            throw new BadRequestException("targetType должен быть track, user или comment");
 
-    _db.Complaints.Add(complaint);
-    await _db.SaveChangesAsync();
-}
-   public async Task<IEnumerable<ComplaintResponseDto>> GetAllAsync()
-{
-    var complaints = await _db.Complaints.OrderByDescending(c => c.CreatedAt).ToListAsync();
+        var complaint = new Complaint
+        {
+            ReporterId = reporterId,
+            Reason = dto.Reason.Trim(),
+            Description = dto.Description?.Trim(),
+            Status = "pending",
+            CreatedAt = DateTime.UtcNow
+        };
 
-    return complaints.Select(c => new ComplaintResponseDto(
-        c.Id,
-        c.MusicId != null ? ComplaintTargetType.Track : 
-        c.TargetUserId != null ? ComplaintTargetType.User : ComplaintTargetType.Comment,
-        c.MusicId ?? c.TargetUserId ?? c.CommentId ?? 0,
-        c.Reason,
-        "", 
-        c.ReporterId,
-        Enum.TryParse<ComplaintStatus>(c.Status, true, out var statusEnum) ? statusEnum : ComplaintStatus.Pending, 
-        c.CreatedAt
-    ));
-}
+        if (type == "track")
+        {
+            if (!await _db.Musics.AnyAsync(m => m.Id == dto.TargetId && m.DeletedAt == null))
+                throw new NotFoundException("Трек не найден");
+            if (await _db.Complaints.AnyAsync(c => c.ReporterId == reporterId && c.MusicId == dto.TargetId))
+                throw new ConflictException("Вы уже отправляли жалобу на этот трек");
+            complaint.MusicId = dto.TargetId;
+        }
+        else if (type == "user")
+        {
+            if (!await _db.Users.AnyAsync(u => u.Id == dto.TargetId && u.DeletedAt == null))
+                throw new NotFoundException("Пользователь не найден");
+            if (await _db.Complaints.AnyAsync(c => c.ReporterId == reporterId && c.TargetUserId == dto.TargetId))
+                throw new ConflictException("Вы уже отправляли жалобу на этого пользователя");
+            complaint.TargetUserId = dto.TargetId;
+        }
+        else
+        {
+            if (!await _db.Comments.AnyAsync(c => c.Id == dto.TargetId && c.DeletedAt == null))
+                throw new NotFoundException("Комментарий не найден");
+            if (await _db.Complaints.AnyAsync(c => c.ReporterId == reporterId && c.CommentId == dto.TargetId))
+                throw new ConflictException("Вы уже отправляли жалобу на этот комментарий");
+            complaint.CommentId = dto.TargetId;
+        }
+
+        _db.Complaints.Add(complaint);
+        await _db.SaveChangesAsync();
+
+        var saved = await _db.Complaints
+            .Include(c => c.Reporter)
+            .Include(c => c.Music)
+            .Include(c => c.TargetUser)
+            .Include(c => c.Comment)
+            .FirstAsync(c => c.Id == complaint.Id);
+
+        return ModeratorService.ToComplaintDto(saved);
+    }
 }

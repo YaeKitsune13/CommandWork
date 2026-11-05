@@ -1,22 +1,23 @@
-using api.Entities;
-using System;
-
 namespace api.Dtos;
 
 public record ComplaintCreateDto(
-    ComplaintTargetType TargetType, 
-    ulong TargetId, 
-    string Reason, 
+    string TargetType,
+    ulong TargetId,
+    string Reason,
     string? Description
 );
 
+public record ComplaintTargetBriefDto(ulong Id, string Title);
+
 public record ComplaintResponseDto(
     ulong Id,
-    ComplaintTargetType TargetType,
-    ulong TargetId,
+    string TargetType,
+    ComplaintTargetBriefDto Target,
     string Reason,
     string? Description,
-    ulong ReporterId,
-    ComplaintStatus Status,
-    DateTime CreatedAt
+    UserBriefDto Reporter,
+    string Status,
+    DateTime CreatedAt,
+    UserBriefDto? ResolvedBy = null,
+    DateTime? ResolvedAt = null
 );

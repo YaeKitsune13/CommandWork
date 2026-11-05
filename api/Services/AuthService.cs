@@ -1,15 +1,18 @@
 using System.Security.Cryptography;
 using System.Text;
+using api;
 using api.Data;
+using api.Dtos;
 using api.Entities;
-using api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+namespace api.Services;
+
 public interface IAuthService
 {
-    Task<bool> RegisterAsync(RegisterDto dto);
-    Task<string?> LoginAsync(LoginDto dto);
+    Task<string> RegisterAsync(RegisterDto dto);
+    Task<string> LoginAsync(LoginDto dto);
     Task<string?> ForgotPasswordAsync(string email);
     Task ResetPasswordAsync(ResetPasswordDto dto);
 }
@@ -18,43 +21,70 @@ public class AuthService : IAuthService
 {
     private readonly CoopProjectContext _db;
     private readonly PasswordHasher<User> _hasher = new();
-    private readonly IConfiguration _cfg;
 
-    public AuthService(CoopProjectContext db, IConfiguration cfg)
-    {
-        _db = db;
-        _cfg = cfg;
-    }
+    public AuthService(CoopProjectContext db) => _db = db;
 
-    public async Task<bool> RegisterAsync(RegisterDto dto)
+    public async Task<string> RegisterAsync(RegisterDto dto)
     {
-        if (await _db.Users.AnyAsync(u => u.Email == dto.Email))
-            return false;
+        var fields = new Dictionary<string, string[]>();
+
+        if (string.IsNullOrWhiteSpace(dto.Email) || !dto.Email.Contains('@'))
+            fields["email"] = ["Некорректный email"];
+
+        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+            fields["password"] = ["Пароль должен быть минимум 6 символов"];
+
+        var nickname = dto.Nickname?.Trim() ?? "";
+        if (nickname.Length < 2 || nickname.Length > 100)
+            fields["nickname"] = ["Никнейм должен быть от 2 до 100 символов"];
+
+        if (fields.Count > 0)
+            throw new BadRequestException("Ошибка валидации", fields);
+
+        var email = dto.Email.Trim();
+        var phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim();
+
+        if (await _db.Users.AnyAsync(u => u.Email == email))
+            fields["email"] = ["Этот email уже занят"];
+
+        if (await _db.Users.AnyAsync(u => u.Nickname == nickname))
+            fields["nickname"] = ["Этот никнейм уже занят"];
+
+        if (phone != null && await _db.Users.AnyAsync(u => u.Phone == phone))
+            fields["phone"] = ["Этот телефон уже занят"];
+
+        if (fields.Count > 0)
+            throw new ConflictException("Пользователь с такими данными уже существует", fields);
 
         var user = new User
         {
-            Email = dto.Email,
-            Nickname = dto.Nickname,
+            Email = email,
+            Nickname = nickname,
+            Phone = phone,
             Role = "user",
-            Privacy = "public"
+            Privacy = "public",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
         user.PasswordHash = _hasher.HashPassword(user, dto.Password);
 
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
-        return true;
+
+        return JWTSetup.CreateToken(user);
     }
 
-    public async Task<string?> LoginAsync(LoginDto dto)
+    public async Task<string> LoginAsync(LoginDto dto)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-
-        if (user is null || user.IsBlocked || user.DeletedAt != null)
-            return null;
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email && u.DeletedAt == null)
+            ?? throw new UnauthorizedException("Неверный email или пароль");
 
         var result = _hasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
         if (result == PasswordVerificationResult.Failed)
-            return null;
+            throw new UnauthorizedException("Неверный email или пароль");
+
+        if (user.IsBlocked)
+            throw new ForbiddenException("Аккаунт заблокирован", "blocked");
 
         return JWTSetup.CreateToken(user);
     }
@@ -79,7 +109,6 @@ public class AuthService : IAuthService
         });
         await _db.SaveChangesAsync();
 
-        // Возвращаем готовый токен (или полную ссылку), чтобы фронтенд мог сразу его использовать
         return token;
     }
 

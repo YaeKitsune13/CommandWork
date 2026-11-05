@@ -29,29 +29,36 @@ public class AdminService : IAdminService
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);
 
-        var query = _db.Users.Where(u => u.DeletedAt == null);
+        var query = _db.Users.AsNoTracking().Where(u => u.DeletedAt == null);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
             var s = search.Trim().ToLower();
-            query = query.Where(u => u.Email.ToLower().Contains(s) || (u.Nickname != null && u.Nickname.ToLower().Contains(s)));
+            query = query.Where(u => u.Email.ToLower().Contains(s) || u.Nickname.ToLower().Contains(s));
         }
 
         var total = await query.CountAsync();
-        var items = await query
+        var users = await query
             .OrderByDescending(u => u.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(u => new UserProfileDto(
-                u.Id,
-                u.Nickname,
-                u.Image,
-                u.Privacy,
-                u.Role,
-                u.Email,
-                u.Phone,
-                u.CreatedAt))
             .ToListAsync();
+
+        var items = users.Select(u => new UserProfileDto(
+            u.Id,
+            u.Nickname,
+            u.Image,
+            u.Privacy,
+            u.Role,
+            u.Email,
+            u.Phone,
+            u.CreatedAt,
+            Stats: null,
+            FollowStatus: null,
+            IsMe: false,
+            IsRestricted: false,
+            IsBlocked: u.IsBlocked
+        )).ToList();
 
         return new PagedResult<UserProfileDto>(items, page, pageSize, total);
     }
