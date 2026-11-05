@@ -11,6 +11,8 @@ import Settings_window from "./views/Settings_window/Settings_window";
 import MyTracks_window from "./views/MyTracks_window/MyTracks_window";
 import MyPlaylists_window from "./views/MyPlaylists_window/MyPlaylists_window";
 import { useAuth } from "../shared/hooks/auth.js";
+import Admin_window from "./views/Admin/Admin_window";
+import Moderation_window from "./views/Moderation_window/Moderation_window";
 import "./App.css";
 
 function App() {
@@ -51,17 +53,24 @@ function App() {
             />
           )}
 
-          {currentView === "profile" && (
-            <Profile_window userId={auth.user?.id} />
+          {currentView === "profile" && auth.user && (
+            <Profile_window
+              userId={auth.user.id}
+              onLogout={() => {
+                auth.logout();
+                setCurrentView("catalog");
+              }}
+            />
           )}
           {currentView === "settings" && (
             <Settings_window userId={auth.user?.id} user={auth.user} />
           )}
           {currentView === "my-tracks" && <MyTracks_window />}
           {currentView === "my-playlists" && <MyPlaylists_window />}
+          {currentView === "moderation" && <Moderation_window auth={auth} />}
+          {currentView === "admin" && <Admin_window auth={auth} />}
         </div>
 
-        {/* DEV role switcher — remove when real roles from /auth/me work */}
         <div className="debug-row">
           <span>(DEV) роль: {auth.role}</span>
         </div>

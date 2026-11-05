@@ -15,14 +15,7 @@ function MyPlaylists_window() {
         </button>
       </div>
 
-      <div className="playlist-grid">
-        {/* Dummy Playlist */}
-        <div className="playlist-card">
-          <div className="playlist-card__cover" />
-          <h3>Chill Vibes</h3>
-          <p>12 треков</p>
-        </div>
-      </div>
+      <div className="playlist-grid"></div>
 
       {/* CREATE PLAYLIST MODAL */}
       {isModalOpen && (

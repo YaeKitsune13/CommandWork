@@ -1,30 +1,50 @@
-import "./Profile_window.css";
+import { useEffect, useState } from "react";
+import { LogOut } from "lucide-react";
 import { api } from "shared/hooks/client.js";
 import { imageUrl, onImgError } from "shared/fallbackImage.js";
-function Profile_window() {
+import "./Profile_window.css";
+
+function Profile_window({ userId, onLogout }) {
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!userId) return;
+    api
+      .get(`/users/${userId}`, { auth: false })
+      .then(setUser)
+      .catch((err) => setError(err.message));
+  }, [userId]);
+
+  if (error) return <p>{error}</p>;
+  if (!user) return <p>Загрузка...</p>;
+
   return (
     <div className="profile">
       <div className="profile__header">
-        <div className="profile__avatar">U</div>
-        <div className="profile__info">
-          <h1 className="profile__name">Guest User</h1>
-          <p className="profile__bio">
-            Music lover and creator. Welcome to my profile!
-          </p>
-          <div className="profile__stats">
-            <span>
-              <strong>12</strong> Tracks
-            </span>
-            <span>
-              <strong>4</strong> Playlists
-            </span>
-            <span>
-              <strong>128</strong> Followers
-            </span>
-          </div>
+        <div className="profile__avatar">
+          {user.image ? (
+            <img src={imageUrl(user.image)} onError={onImgError} alt="" />
+          ) : (
+            (user.nickname?.[0]?.toUpperCase() ?? "U")
+          )}
         </div>
+        <div className="profile__info">
+          <h1 className="profile__name">{user.nickname || "Без имени"}</h1>
+          <p className="profile__bio">{user.email}</p>
+        </div>
+
+        <button
+          type="button"
+          className="profile__logout-btn"
+          onClick={onLogout}
+          aria-label="Выйти из аккаунта"
+        >
+          <LogOut size={18} /> Выйти
+        </button>
       </div>
     </div>
   );
 }
+
 export default Profile_window;
