@@ -17,6 +17,8 @@ public record UpdateProfileDto(
 
 public record ChangePasswordDto(string OldPassword, string NewPassword);
 
+public record RecordListenDto(ulong MusicId);
+
 public record HistoryItemDto(
     ulong Id,
     ulong MusicId,

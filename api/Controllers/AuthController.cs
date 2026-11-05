@@ -25,21 +25,43 @@ public class AuthController : ControllerBase
     }
 
     [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+    {
+        var token = await _auth.ForgotPasswordAsync(dto.Email);
+
+        if (token is null)
+        {
+            return Ok(new { message = "Если такой email зарегистрирован, запрос обработан" });
+        }
+
+        return Ok(new { token, message = "Токен сброса пароля успешно сгенерирован" });
+    }
+
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+    {
+        await _auth.ResetPasswordAsync(dto);
+        return NoContent();
+    }
+
+    [AllowAnonymous]
     [HttpPost("guest")]
     public IActionResult Guest() => Ok(new TokenDto(JWTSetup.CreateGuestToken()));
 
-    [Authorize]
-    [HttpGet("me")]
-    public IActionResult Me()
-    {
-        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var name = User.Identity!.Name;
-        var role = User.FindFirstValue(ClaimTypes.Role);
+   [Authorize]
+[HttpGet("me")]
+public IActionResult Me()
+{
+    var idText = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var role = User.FindFirstValue(ClaimTypes.Role);
 
-        return Ok(new { id, name, role });
+    if (!ulong.TryParse(idText, out var id))
+    {
+        return Ok(new { isGuest = true, id = (ulong?)null, name = "Гость", role = role ?? "guest" });
     }
 
-    // [Authorize(Roles = "admin")]
-    // [HttpGet("admin-only")]
-    // public IActionResult AdminOnly() => Ok("Привет, админ");
+    return Ok(new { isGuest = false, id, name = User.Identity!.Name, role });
+}
 }

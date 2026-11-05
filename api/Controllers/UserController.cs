@@ -15,19 +15,16 @@ public class UsersController : ControllerBase
 
     private string? CurrentRole => User.FindFirstValue(ClaimTypes.Role);
 
-    // GET api/users/{id}: гостю можно
     [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProfile(ulong id) =>
         Ok(await _users.GetProfileAsync(id, CurrentId, CurrentRole));
 
-    // PUT api/users/{id}: профиль и приватность
     [Authorize(Policy = "Registered")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProfile(ulong id, UpdateProfileDto dto) =>
         Ok(await _users.UpdateProfileAsync(id, dto, CurrentId!.Value, CurrentRole!));
 
-    // PUT api/users/{id}/password
     [Authorize(Policy = "Registered")]
     [HttpPut("{id}/password")]
     public async Task<IActionResult> ChangePassword(ulong id, ChangePasswordDto dto)
@@ -36,7 +33,14 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    // GET api/users/{id}/history?page=1&pageSize=20
+    [Authorize(Policy = "Registered")]
+    [HttpPost("{id}/history")]
+    public async Task<IActionResult> RecordListen(ulong id, RecordListenDto dto)
+    {
+        await _users.RecordListenAsync(id, dto.MusicId, CurrentId!.Value);
+        return NoContent();
+    }
+
     [Authorize(Policy = "Registered")]
     [HttpGet("{id}/history")]
     public async Task<IActionResult> GetHistory(ulong id, int page = 1, int pageSize = 20) =>
