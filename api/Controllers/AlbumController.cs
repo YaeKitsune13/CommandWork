@@ -3,60 +3,57 @@ using api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace api.Controller;
+namespace api.Controllers;
 
-[ApiController]
 [Route("api/albums")]
 [Tags("Albums")]
-public class AlbumsController : ControllerBase
+public class AlbumsController : ApiControllerBase
 {
     private readonly IAlbumService _albums;
 
-    public AlbumsController(IAlbumService albums)
-    {
-        _albums = albums;
-    }
+    public AlbumsController(IAlbumService albums) => _albums = albums;
 
+    [AllowAnonymous]
     [HttpGet]
-    public Task<IActionResult> GetAll([FromQuery] string? search) =>
-        Handle(async () => Ok(await _albums.GetAllAsync(search)));
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? search,
+        [FromQuery] ulong? ownerId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20) =>
+        Ok(await _albums.GetAllAsync(search, ownerId, page, pageSize));
 
-    [HttpGet("{id}")]
-    public Task<IActionResult> Get([FromRoute] ulong id) =>
-        Handle(async () => Ok(await _albums.GetAsync(id)));
-[HttpPost]
-[Consumes("multipart/form-data")]
-public async Task<IActionResult> Create([FromForm] AlbumCreateDto dto)
-{
-    var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    if (string.IsNullOrEmpty(userIdStr) || !ulong.TryParse(userIdStr, out ulong userId))
+    [AllowAnonymous]
+    [HttpGet("{id:ulong}")]
+    public async Task<IActionResult> Get(ulong id) =>
+        Ok(await _albums.GetAsync(id, CurrentIdOrNull, CurrentRole));
+
+    [Authorize(Policy = "Registered")]
+    [HttpPost]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Create([FromForm] AlbumCreateDto dto)
     {
-        return Unauthorized();
+        var album = await _albums.CreateAsync(dto, CurrentId);
+        return StatusCode(StatusCodes.Status201Created, album);
     }
 
-    var album = await _albums.CreateAsync(dto, userId);
-    return Ok(new { message = "Альбом успешно создан", album });
-}
+    [Authorize(Policy = "Registered")]
+    [HttpPut("{id:ulong}")]
+    public async Task<IActionResult> Edit(ulong id, [FromBody] AlbumEditDto dto) =>
+        Ok(await _albums.EditAsync(id, dto, CurrentId, CurrentRole));
+
+    [Authorize(Policy = "Registered")]
     [HttpPut("edit")]
-    public Task<IActionResult> Edit([FromBody] AlbumEditDto dto) =>
-        Handle(async () =>
-        {
-            await _albums.EditAsync(dto);
-            return Ok(new { message = "Альбом обновлен" });
-        });
-
-    [HttpDelete("{id}")]
-    public Task<IActionResult> Delete([FromRoute] ulong id) =>
-        Handle(async () =>
-        {
-            await _albums.DeleteAsync(id);
-            return Ok(new { message = "Альбом удален" });
-        });
-
-    private async Task<IActionResult> Handle(Func<Task<IActionResult>> action)
+    public async Task<IActionResult> EditLegacy([FromBody] AlbumEditDto dto)
     {
-        try { return await action(); }
-        catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
-        catch (ArgumentException ex) { return BadRequest(ex.Message); }
+        if (!dto.Id.HasValue) throw new BadRequestException("Не указан id альбома");
+        return Ok(await _albums.EditAsync(dto.Id.Value, dto, CurrentId, CurrentRole));
+    }
+
+    [Authorize(Policy = "Registered")]
+    [HttpDelete("{id:ulong}")]
+    public async Task<IActionResult> Delete(ulong id)
+    {
+        await _albums.DeleteAsync(id, CurrentId, CurrentRole);
+        return NoContent();
     }
 }

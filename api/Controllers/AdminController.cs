@@ -5,56 +5,56 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers;
 
-[ApiController]
 [Route("api/admin")]
 [Authorize(Roles = "admin")]
-public class AdminController : ControllerBase
+[Tags("Admin")]
+public class AdminController : ApiControllerBase
 {
     private readonly IAdminService _admin;
 
     public AdminController(IAdminService admin) => _admin = admin;
 
-    // GET /admin/users
     [HttpGet("users")]
-    public async Task<IActionResult> GetUsers([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+    public async Task<IActionResult> GetUsers(
+        [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20) =>
         Ok(await _admin.GetUsersAsync(search, page, pageSize));
 
-    // PATCH /admin/users/{id}/role
-    [HttpPatch("users/{id}/role")]
+    [HttpPatch("users/{id:ulong}/role")]
     public async Task<IActionResult> ChangeRole(ulong id, [FromBody] SetRoleDto dto)
     {
         await _admin.ChangeUserRoleAsync(id, dto.Role);
         return NoContent();
     }
 
-    // PATCH /admin/users/{id}/block
-    [HttpPatch("users/{id}/block")]
+    [HttpPatch("users/{id:ulong}/block")]
     public async Task<IActionResult> SetBlock(ulong id, [FromBody] SetBlockDto dto)
     {
         await _admin.SetUserBlockAsync(id, dto.IsBlocked);
         return NoContent();
     }
 
-    // Жанры
     [HttpGet("genres")]
-    public async Task<IActionResult> GetGenres() => Ok(await _admin.GetGenresAsync());
+    public async Task<IActionResult> GetGenres() =>
+        Ok(await _admin.GetGenresAsync());
 
     [HttpPost("genres")]
     public async Task<IActionResult> CreateGenre([FromBody] CreateGenreDto dto) =>
-        Ok(await _admin.CreateGenreAsync(dto));
+        StatusCode(StatusCodes.Status201Created, await _admin.CreateGenreAsync(dto));
 
-    [HttpPut("genres/{id}")]
+    [HttpPut("genres/{id:ulong}")]
     public async Task<IActionResult> UpdateGenre(ulong id, [FromBody] UpdateGenreDto dto) =>
         Ok(await _admin.UpdateGenreAsync(id, dto));
 
-    [HttpDelete("genres/{id}")]
+    [HttpDelete("genres/{id:ulong}")]
     public async Task<IActionResult> DeleteGenre(ulong id)
     {
         await _admin.DeleteGenreAsync(id);
         return NoContent();
     }
 
-    // GET /admin/analytics
     [HttpGet("analytics")]
-    public async Task<IActionResult> GetAnalytics() => Ok(await _admin.GetAnalyticsAsync());
+    public async Task<IActionResult> GetAnalytics() =>
+        Ok(await _admin.GetAnalyticsAsync());
 }
