@@ -1,22 +1,21 @@
-import { useState } from 'react';
-import { LogIn, ArrowLeft } from 'lucide-react';
-import './Login_window.css';
+import { useState } from "react";
+import { LogIn, ArrowLeft } from "lucide-react";
+import "./Login_window.css";
+import { api } from "shared/hooks/client.js";
+import { imageUrl, onImgError } from "shared/fallbackImage.js";
+function Login_window({ auth, onLoginSuccess, onCancel, onGoToRegister }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-function Login_window({ onLoginSuccess, onCancel, onGoToRegister }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !password) return setError("Пожалуйста, заполните все поля.");
+    setError("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault(); 
-    
-    if (email.length == 0 || password.length == 0) {
-      setError('Пожалуйста, заполните все поля.');
-      return;
-    }
-
-    setError('');
-    onLoginSuccess('user'); 
+    const result = await auth.login(email, password);
+    if (result.success) onLoginSuccess();
+    else setError(result.error);
   };
 
   return (
@@ -28,7 +27,6 @@ function Login_window({ onLoginSuccess, onCancel, onGoToRegister }) {
       <div className="login-card">
         <h2 className="login-title">С возвращением</h2>
         <p className="login-subtitle">Войдите в свой аккаунт</p>
-
         {error && <div className="login-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
@@ -42,7 +40,6 @@ function Login_window({ onLoginSuccess, onCancel, onGoToRegister }) {
               placeholder="Введите ваш email"
             />
           </div>
-
           <div className="login-input-group">
             <label htmlFor="password">Пароль</label>
             <input
@@ -53,18 +50,23 @@ function Login_window({ onLoginSuccess, onCancel, onGoToRegister }) {
               placeholder="Введите пароль"
             />
           </div>
-
-          <button type="submit" className="login-submit-btn">
-            <LogIn size={18} /> Войти
+          <button
+            type="submit"
+            className="login-submit-btn"
+            disabled={auth.loading}
+          >
+            <LogIn size={18} /> {auth.loading ? "Вход..." : "Войти"}
           </button>
         </form>
 
         <div className="login-footer">
-          Нету аккаунта? <span className="login-link" onClick={onGoToRegister}>Создайте</span>
+          Нету аккаунта?{" "}
+          <span className="login-link" onClick={onGoToRegister}>
+            Создайте
+          </span>
         </div>
       </div>
     </div>
   );
 }
-
 export default Login_window;

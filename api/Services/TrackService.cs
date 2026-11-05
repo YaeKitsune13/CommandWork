@@ -55,7 +55,7 @@ public class TrackService : ITrackService
 
         if (!await _db.Users.AnyAsync(u => u.Id == ownerId && !u.IsBlocked && u.DeletedAt == null))
             throw new ArgumentException("Пользователь не найден");
-
+        
         var fileUrl = await SaveFileAsync(dto.AudioFile, "music");
         var duration = ReadDuration(fileUrl);   // новое
         if (duration == null)
