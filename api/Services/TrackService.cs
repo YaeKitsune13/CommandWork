@@ -51,23 +51,25 @@ public class TrackService : ITrackService
             !ImageExtensions.Contains(Path.GetExtension(dto.Image.FileName).ToLowerInvariant()))
             throw new ArgumentException("Неподдерживаемый формат картинки (jpg, png, webp)");
 
-        await EnsureRelationsExistAsync(dto.ArtistId, dto.AlbumId);
+        if (dto.AlbumId != null && !await _db.Albums.AnyAsync(a => a.Id == dto.AlbumId))
+            throw new ArgumentException("Альбом не найден");
 
         if (!await _db.Users.AnyAsync(u => u.Id == ownerId && !u.IsBlocked && u.DeletedAt == null))
             throw new ArgumentException("Пользователь не найден");
-        
+
         var fileUrl = await SaveFileAsync(dto.AudioFile, "music");
-        var duration = ReadDuration(fileUrl);   // новое
+        var duration = ReadDuration(fileUrl);
         if (duration == null)
-        {
             throw new ArgumentException("Не удалось прочитать аудиофайл");
-        }
+
         var imageUrl = dto.Image is { Length: > 0 } ? await SaveFileAsync(dto.Image, "images") : null;
+
+        var artist = await GetOrCreateArtistAsync(dto.ArtistName);
 
         var music = new Music
         {
             Name = dto.Name,
-            ArtistId = dto.ArtistId,
+            Artist = artist,
             OwnerId = ownerId,
             AlbumId = dto.AlbumId,
             FileUrl = fileUrl,
@@ -78,22 +80,7 @@ public class TrackService : ITrackService
         };
         _db.Musics.Add(music);
         await _db.SaveChangesAsync();
-        await _db.Entry(music).Reference(m => m.Artist).LoadAsync();
         return ToDto(music);
-    }
-    public async Task<List<TrackResponseDto>> GetByArtistAsync(ulong artistId)
-    {
-        if (!await _db.Artists.AnyAsync(a => a.Id == artistId))
-            throw new KeyNotFoundException("Артист не найден");
-
-        var tracks = await Alive
-            .Include(m => m.Artist)
-            .AsNoTracking()
-            .Where(m => m.ArtistId == artistId)
-            .OrderByDescending(m => m.CreatedAt)
-            .ToListAsync();
-
-        return tracks.Select(ToDto).ToList();
     }
 
     public async Task<TrackResponseDto> GetAsync(ulong id)
@@ -113,6 +100,21 @@ public class TrackService : ITrackService
 
         var ext = Path.GetExtension(path).ToLowerInvariant();
         return new TrackSoundDto(path, AudioTypes.GetValueOrDefault(ext, "application/octet-stream"));
+    }
+
+    public async Task<List<TrackResponseDto>> GetByArtistAsync(ulong artistId)
+    {
+        if (!await _db.Artists.AnyAsync(a => a.Id == artistId))
+            throw new KeyNotFoundException("Артист не найден");
+
+        var tracks = await Alive
+            .Include(m => m.Artist)
+            .AsNoTracking()
+            .Where(m => m.ArtistId == artistId)
+            .OrderByDescending(m => m.CreatedAt)
+            .ToListAsync();
+
+        return tracks.Select(ToDto).ToList();
     }
 
     public async Task DeleteAsync(ulong id)
@@ -138,6 +140,19 @@ public class TrackService : ITrackService
         await _db.SaveChangesAsync();
     }
 
+    private async Task<Artist> GetOrCreateArtistAsync(string name)
+    {
+        name = name?.Trim() ?? "";
+        if (name.Length == 0)
+            throw new ArgumentException("Не указан артист");
+
+        var artist = await _db.Artists.FirstOrDefaultAsync(a => a.Name == name);
+        if (artist != null) return artist;
+
+        artist = new Artist { Name = name };
+        _db.Artists.Add(artist);
+        return artist;
+    }
 
     private async Task EnsureRelationsExistAsync(ulong artistId, ulong? albumId)
     {
@@ -167,6 +182,23 @@ public class TrackService : ITrackService
         return File.Exists(full) ? full : null;
     }
 
+    private uint? ReadDuration(string fileUrl)
+    {
+        var path = GetPhysicalPath(fileUrl);
+        if (path == null)
+            return null;
+
+        try
+        {
+            using var tagFile = TagLib.File.Create(path);
+            return (uint)Math.Round(tagFile.Properties.Duration.TotalSeconds);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static TrackResponseDto ToDto(Music m) => new()
     {
         Id = m.Id,
@@ -182,22 +214,4 @@ public class TrackService : ITrackService
         RejectionReason = m.RejectionReason,
         CreatedAt = m.CreatedAt
     };
-    private uint? ReadDuration(string fileUrl)
-    {
-        var path = GetPhysicalPath(fileUrl);
-        if (path == null)
-        {
-            return null;
-        }
-
-        try
-        {
-            using var tagFile = TagLib.File.Create(path);
-            return (uint)Math.Round(tagFile.Properties.Duration.TotalSeconds);
-        }
-        catch
-        {
-            return null;
-        }
-    }
 }

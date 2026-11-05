@@ -8,8 +8,7 @@ public class TrackUploadDto
     [StringLength(200)]
     public string Name { get; set; } = null!;
 
-    [Required(ErrorMessage = "Артист обязателен")]
-    public ulong ArtistId { get; set; }
+    public string ArtistName { get; set; } = null!;
 
     public ulong? AlbumId { get; set; }
 
@@ -37,7 +36,6 @@ public class TrackEditDto
 
     public ulong? AlbumId { get; set; }
 }
-
 public class TrackResponseDto
 {
     public ulong Id { get; set; }
