@@ -46,7 +46,7 @@ if (app.Environment.IsDevelopment())
     {
         // options.DisableAgent();
     });
-     using var scope = app.Services.CreateScope();
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<CoopProjectContext>();
     SeedData.Run(db);
 }
