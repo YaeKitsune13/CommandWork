@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Upload, X, Music, Clock, CheckCircle, XCircle } from "lucide-react";
+import {
+  Upload,
+  X,
+  Music,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+} from "lucide-react";
 import { api } from "shared/hooks/client.js";
 import { imageUrl, onImgError } from "shared/fallbackImage.js";
 import "./MyTracks_window.css";
@@ -10,6 +18,13 @@ function MyTracks_window({ auth }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [msg, setMsg] = useState("");
   const [msgOk, setMsgOk] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const [artistId, setArtistId] = useState(null);
+  const [artistError, setArtistError] = useState("");
+  const [resolvingArtist, setResolvingArtist] = useState(false);
+
+  const isGuest = auth?.isGuest || auth?.role === "guest" || !auth?.user?.id;
 
   const loadTracks = async () => {
     const userId = auth?.user?.id;
@@ -20,7 +35,6 @@ function MyTracks_window({ auth }) {
     }
     setLoading(true);
     try {
-      // Endpoint does not exist yet — will 404. Catch and show empty state.
       const result = await api.get(`/users/${userId}/tracks`);
       const items = Array.isArray(result) ? result : (result?.items ?? []);
       setTracks(items);
@@ -31,27 +45,98 @@ function MyTracks_window({ auth }) {
     }
   };
 
+  const resolveArtistId = async (name) => {
+    if (!name) return null;
+    try {
+      const result = await api.get(
+        `/search?query=${encodeURIComponent(name)}`,
+        { auth: false },
+      );
+      const artists =
+        result?.artists ?? result?.Artists ?? result?.artistsList ?? [];
+      if (!Array.isArray(artists)) return null;
+
+      const norm = (s) => (typeof s === "string" ? s.trim().toLowerCase() : "");
+      const target = norm(name);
+
+      const match = artists.find((a) => {
+        const n = a.name ?? a.Name ?? a.nickname ?? a.Nickname;
+        return norm(n) === target;
+      });
+
+      if (!match) return null;
+      return match.id ?? match.Id ?? null;
+    } catch {
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      if (isGuest) {
+        setArtistId(null);
+        setArtistError("");
+        return;
+      }
+      setResolvingArtist(true);
+      const id = await resolveArtistId(auth?.user?.name);
+      if (cancelled) return;
+      setResolvingArtist(false);
+      setArtistId(id);
+      setArtistError(
+        id
+          ? ""
+          : `Профиль артиста для «${auth?.user?.name ?? "?"}» не найден в базе. ` +
+              `Загрузка треков недоступна — обратитесь к администратору.`,
+      );
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [auth?.user?.id, auth?.user?.name, isGuest]);
+
   useEffect(() => {
     loadTracks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.user?.id]);
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const fd = new FormData(form);
 
-    // Strip empty file inputs (image is often unselected)
-    for (const [key, val] of [...fd.entries()]) {
-      if (val instanceof File && val.size === 0) fd.delete(key);
-    }
-
-    if (!fd.get("AudioFile")?.size) {
-      setMsg("Пожалуйста, выберите аудиофайл");
+    if (!artistId) {
+      setMsg(
+        artistError || "Профиль артиста не определён — загрузка невозможна",
+      );
       setMsgOk(false);
       return;
     }
 
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+
+    for (const [key, val] of [...fd.entries()]) {
+      if (val instanceof File && val.size === 0) fd.delete(key);
+    }
+
+    if (!fd.get("Name")?.toString().trim()) {
+      setMsg("Укажите название трека");
+      setMsgOk(false);
+      return;
+    }
+    if (!fd.get("AudioFile")?.size) {
+      setMsg("Выберите аудиофайл");
+      setMsgOk(false);
+      return;
+    }
+
+    // Inject the required ArtistId field
+    fd.set("ArtistId", String(artistId));
+
     setMsg("");
+    setUploading(true);
     try {
       await api.post("/music", fd);
       setMsg("✓ Трек отправлен на модерацию");
@@ -62,9 +147,14 @@ function MyTracks_window({ auth }) {
     } catch (err) {
       setMsg(err.message || "Не удалось загрузить трек");
       setMsgOk(false);
+    } finally {
+      setUploading(false);
     }
   };
 
+  /* ------------------------------------------------------------------ */
+  /* Status meta                                                         */
+  /* ------------------------------------------------------------------ */
   const statusMeta = (status) => {
     switch (status) {
       case "pending":
@@ -78,11 +168,21 @@ function MyTracks_window({ auth }) {
     }
   };
 
+  const canUpload = !isGuest && !!artistId && !resolvingArtist;
+
+  /* ------------------------------------------------------------------ */
+  /* Render                                                              */
+  /* ------------------------------------------------------------------ */
   return (
     <div className="my-tracks">
       <div className="my-tracks__header">
         <h1>Мои треки</h1>
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+        <button
+          className="btn-primary"
+          onClick={() => setIsModalOpen(true)}
+          disabled={isGuest}
+          title={isGuest ? "Войдите, чтобы загружать треки" : undefined}
+        >
           <Upload size={18} /> Загрузить трек
         </button>
       </div>
@@ -93,19 +193,34 @@ function MyTracks_window({ auth }) {
         </div>
       )}
 
+      {!isGuest && artistError && (
+        <div className="my-tracks__warning">
+          <AlertTriangle size={18} />
+          <span>{artistError}</span>
+        </div>
+      )}
+
       {loading && <p className="my-tracks__hint">Загрузка...</p>}
 
       {!loading && tracks.length === 0 && (
         <div className="my-tracks__empty">
           <Music size={64} strokeWidth={1} />
-          <h2>Здесь пока пусто</h2>
+          <h2>
+            {isGuest ? "Войдите, чтобы видеть свои треки" : "Здесь пока пусто"}
+          </h2>
           <p>
-            Загрузите свой первый трек — после проверки модератором он появится
-            в общем каталоге.
+            {isGuest
+              ? "После входа вы сможете загружать треки и отслеживать их статус."
+              : "Загрузите первый трек — после одобрения модератором он появится в каталоге."}
           </p>
-          <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-            <Upload size={18} /> Загрузить трек
-          </button>
+          {canUpload && (
+            <button
+              className="btn-primary"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <Upload size={18} /> Загрузить трек
+            </button>
+          )}
         </div>
       )}
 
@@ -128,7 +243,7 @@ function MyTracks_window({ auth }) {
                     {track.name || "Без названия"}
                   </div>
                   <div className="track-card__author">
-                    {track.author || "—"}
+                    {track.artistName || track.author || "—"}
                   </div>
                   <div
                     className={`track-card__status track-card__status--${s.cls}`}
@@ -151,44 +266,58 @@ function MyTracks_window({ auth }) {
                 <X size={20} />
               </button>
             </div>
-            <form className="modal-form" onSubmit={handleUpload}>
-              <div className="form-field">
-                <label>Название трека *</label>
-                <input
-                  name="name"
-                  type="text"
-                  placeholder="Например: Midnight Rain"
-                  required
-                />
+
+            {!artistId ? (
+              <div className="modal-form">
+                <p className="my-tracks__warning" style={{ margin: 0 }}>
+                  <AlertTriangle size={16} />{" "}
+                  {artistError || "Профиль артиста не найден"}
+                </p>
               </div>
-              <div className="form-field">
-                <label>Исполнитель</label>
-                <input
-                  name="author"
-                  type="text"
-                  placeholder="Ваше имя или псевдоним"
-                />
-              </div>
-              <div className="form-field">
-                <label>Жанр</label>
-                <input
-                  name="genre"
-                  type="text"
-                  placeholder="Rock, Hip-Hop, Jazz..."
-                />
-              </div>
-              <div className="file-input">
-                <label>Аудиофайл (mp3/wav/m4a) *</label>
-                <input name="AudioFile" type="file" accept="audio/*" required />
-              </div>
-              <div className="file-input">
-                <label>Обложка (опционально)</label>
-                <input name="image" type="file" accept="image/*" />
-              </div>
-              <button type="submit" className="btn-primary">
-                Отправить на модерацию
-              </button>
-            </form>
+            ) : (
+              <form className="modal-form" onSubmit={handleUpload}>
+                <div className="form-field">
+                  <label>Название трека *</label>
+                  <input
+                    name="Name"
+                    type="text"
+                    placeholder="Например: Midnight Rain"
+                    required
+                  />
+                </div>
+
+                <div className="file-input">
+                  <label>Аудиофайл (mp3 / wav / m4a) *</label>
+                  <input
+                    name="AudioFile"
+                    type="file"
+                    accept="audio/*"
+                    required
+                  />
+                </div>
+
+                <div className="file-input">
+                  <label>Обложка (опционально)</label>
+                  <input name="Image" type="file" accept="image/*" />
+                </div>
+
+                <p
+                  className="my-tracks__hint"
+                  style={{ margin: 0, fontSize: 12 }}
+                >
+                  Автор: <b>{auth?.user?.name}</b> · трек будет отправлен на
+                  модерацию
+                </p>
+
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={uploading}
+                >
+                  {uploading ? "Отправка..." : "Отправить на модерацию"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}

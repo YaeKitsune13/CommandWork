@@ -62,11 +62,9 @@ function App() {
               }}
             />
           )}
-          {currentView === "settings" && (
-            <Settings_window userId={auth.user?.id} user={auth.user} />
-          )}
-          {currentView === "my-tracks" && <MyTracks_window />}
-          {currentView === "my-playlists" && <MyPlaylists_window />}
+          {currentView == "settings" && <Settings_window auth={auth} />}
+          {currentView == "my-tracks" && <MyTracks_window auth={auth} />}
+          {currentView == "my-playlists" && <MyPlaylists_window auth={auth} />}
           {currentView === "moderation" && <Moderation_window auth={auth} />}
           {currentView === "admin" && <Admin_window auth={auth} />}
         </div>
