@@ -9,7 +9,7 @@ const API_HOST = "http://127.0.0.1:5000/api";
 const pick = (obj, ...keys) => {
   if (!obj) return undefined;
   for (const k of keys)
-    if (obj[k] !== undefined && obj[k] !== null) return obj[k];
+    if (obj[k] != undefined && obj[k] != null) return obj[k];
   return undefined;
 };
 
@@ -52,14 +52,14 @@ function Moderation_window({ auth }) {
         <div className="admin__tabs">
           <button
             type="button"
-            className={`admin__tab ${tab === "music" ? "admin__tab--active" : ""}`}
+            className={`admin__tab ${tab == "music" ? "admin__tab--active" : ""}`}
             onClick={() => setTab("music")}
           >
             <Music size={16} /> Заявки на треки
           </button>
           <button
             type="button"
-            className={`admin__tab ${tab === "complaints" ? "admin__tab--active" : ""}`}
+            className={`admin__tab ${tab == "complaints" ? "admin__tab--active" : ""}`}
             onClick={() => setTab("complaints")}
           >
             <Flag size={16} /> Жалобы
@@ -74,8 +74,6 @@ function Moderation_window({ auth }) {
     </div>
   );
 }
-
-/* ============================ MUSIC APPROVALS ============================ */
 
 function MusicApprovals() {
   const [items, setItems] = useState([]);
@@ -100,7 +98,6 @@ function MusicApprovals() {
   const review = async (trackId, approved) => {
     setBusyId(trackId);
     try {
-      // ⚠ adjust DTO field names if MusicReviewDto differs
       await api.put("/moderator/music/review", { musicId: trackId, approved });
       setItems((prev) =>
         prev.filter((t) => pick(t, "id", "track_id", "music_id") !== trackId),
@@ -114,7 +111,7 @@ function MusicApprovals() {
 
   if (loading) return <p className="admin__msg">Загрузка заявок...</p>;
   if (error) return <p className="admin__msg admin__msg--error">{error}</p>;
-  if (items.length === 0)
+  if (items.length == 0)
     return <p className="admin__msg">Нет треков на модерации</p>;
 
   return (
@@ -164,7 +161,7 @@ function MusicApprovals() {
               <button
                 type="button"
                 className="admin-btn admin-btn--approve"
-                disabled={busyId === id}
+                disabled={busyId == id}
                 onClick={() => review(id, true)}
               >
                 <Check size={16} /> Одобрить
@@ -172,7 +169,7 @@ function MusicApprovals() {
               <button
                 type="button"
                 className="admin-btn admin-btn--reject"
-                disabled={busyId === id}
+                disabled={busyId == id}
                 onClick={() => review(id, false)}
               >
                 <X size={16} /> Отклонить
@@ -184,8 +181,6 @@ function MusicApprovals() {
     </ul>
   );
 }
-
-/* =============================== COMPLAINTS ============================== */
 
 function ComplaintsPanel() {
   const [items, setItems] = useState([]);
@@ -223,7 +218,7 @@ function ComplaintsPanel() {
 
   if (loading) return <p className="admin__msg">Загрузка жалоб...</p>;
   if (error) return <p className="admin__msg admin__msg--error">{error}</p>;
-  if (items.length === 0)
+  if (items.length == 0)
     return <p className="admin__msg">Активных жалоб нет</p>;
 
   return (
@@ -252,7 +247,7 @@ function ComplaintsPanel() {
             <div className="admin-item__info">
               <span className="admin-item__title">
                 Жалоба #{id} → {targetType}
-                {targetId !== undefined ? ` #${targetId}` : ""}
+                {targetId != undefined ? ` #${targetId}` : ""}
               </span>
               <span className="admin-item__meta">
                 От пользователя: {reporter ?? "—"}
@@ -269,10 +264,10 @@ function ComplaintsPanel() {
               <button
                 type="button"
                 className="admin-btn admin-btn--approve"
-                disabled={busyId === id || status !== "open"}
+                disabled={busyId == id || status != "open"}
                 onClick={() => resolve(id)}
               >
-                <Check size={16} /> {status === "open" ? "Обработать" : status}
+                <Check size={16} /> {status == "open" ? "Обработать" : status}
               </button>
             </div>
           </li>
