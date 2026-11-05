@@ -35,17 +35,17 @@ public class UsersController : ApiControllerBase
         Ok(await _users.SearchUsersAsync(search, page, pageSize));
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetProfile(ulong id) =>
         Ok(await _users.GetProfileAsync(id, CurrentIdOrNull, CurrentRole));
 
     [Authorize(Policy = "Registered")]
-    [HttpPut("{id:ulong}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProfile(ulong id, [FromBody] UpdateProfileDto dto) =>
         Ok(await _users.UpdateProfileAsync(id, dto, CurrentId, CurrentRole));
 
     [Authorize(Policy = "Registered")]
-    [HttpPut("{id:ulong}/password")]
+    [HttpPut("{id}/password")]
     public async Task<IActionResult> ChangePassword(ulong id, [FromBody] ChangePasswordDto dto)
     {
         await _users.ChangePasswordAsync(id, dto, CurrentId);
@@ -53,24 +53,24 @@ public class UsersController : ApiControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}/tracks")]
+    [HttpGet("{id}/tracks")]
     public async Task<IActionResult> GetUserTracks(ulong id, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         Ok(await _tracks.GetByUserAsync(id, status, page, pageSize, CurrentIdOrNull, CurrentRole));
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}/albums")]
+    [HttpGet("{id}/albums")]
     public async Task<IActionResult> GetUserAlbums(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         Ok(await _albums.GetAllAsync(null, id, page, pageSize));
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}/playlists")]
+    [HttpGet("{id}/playlists")]
     public async Task<IActionResult> GetUserPlaylists(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         CurrentIdOrNull == id
             ? Ok(await _playlists.GetMineAsync(id, page, pageSize))
             : Ok(await _playlists.GetPublicAsync(null, id, page, pageSize, CurrentIdOrNull));
 
     [Authorize(Policy = "Registered")]
-    [HttpGet("{id:ulong}/likes")]
+    [HttpGet("{id}/likes")]
     public async Task<IActionResult> GetUserLikes(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         if (CurrentId != id && CurrentRole != "admin")
@@ -79,7 +79,7 @@ public class UsersController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpPost("{id:ulong}/history")]
+    [HttpPost("{id}/history")]
     public async Task<IActionResult> RecordListen(ulong id, [FromBody] RecordListenDto dto)
     {
         await _users.RecordListenAsync(id, dto.MusicId, CurrentId);
@@ -87,7 +87,7 @@ public class UsersController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpGet("{id:ulong}/history")]
+    [HttpGet("{id}/history")]
     public async Task<IActionResult> GetHistory(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         Ok(await _users.GetHistoryAsync(id, CurrentId, CurrentRole, page, pageSize));
 }

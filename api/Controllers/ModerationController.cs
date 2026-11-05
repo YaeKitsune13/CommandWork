@@ -18,7 +18,7 @@ public class ModeratorController : ApiControllerBase
     public async Task<IActionResult> GetComplaints([FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         Ok(await _service.GetAllComplaintsAsync(status, page, pageSize));
 
-    [HttpPut("complaints/{id:ulong}/resolve")]
+    [HttpPut("complaints/{id}/resolve")]
     public async Task<IActionResult> ResolveComplaint(ulong id, [FromBody] ResolveComplaintDto? dto) =>
         Ok(await _service.ResolveComplaintAsync(id, CurrentId, dto?.Status ?? "resolved"));
 
@@ -27,7 +27,7 @@ public class ModeratorController : ApiControllerBase
     public async Task<IActionResult> GetPendingMusic([FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         Ok(await _service.GetPendingMusicAsync(page, pageSize));
 
-    [HttpPut("tracks/{id:ulong}/review")]
+    [HttpPut("tracks/{id}/review")]
     public async Task<IActionResult> ReviewTrack(ulong id, [FromBody] MusicReviewDto dto) =>
         Ok(await _service.ReviewMusicAsync(id, dto, CurrentId));
 
@@ -38,7 +38,7 @@ public class ModeratorController : ApiControllerBase
         return Ok(await _service.ReviewMusicAsync(dto.MusicId.Value, dto, CurrentId));
     }
 
-    [HttpPatch("users/{id:ulong}/block")]
+    [HttpPatch("users/{id}/block")]
     public async Task<IActionResult> BlockUser(ulong id, [FromBody] UserBlockDto dto)
     {
         await _service.SetUserBlockStatusAsync(id, dto.IsBlocked, CurrentRole);

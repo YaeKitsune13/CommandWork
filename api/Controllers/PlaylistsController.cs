@@ -28,7 +28,7 @@ public class PlaylistsController : ApiControllerBase
         Ok(await _playlists.GetMineAsync(CurrentId, page, pageSize));
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> Get(ulong id) =>
         Ok(await _playlists.GetAsync(id, CurrentIdOrNull, CurrentRole));
 
@@ -38,12 +38,12 @@ public class PlaylistsController : ApiControllerBase
         StatusCode(StatusCodes.Status201Created, await _playlists.CreateAsync(dto, CurrentId));
 
     [Authorize(Policy = "Registered")]
-    [HttpPut("{id:ulong}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Edit(ulong id, [FromBody] PlaylistEditDto dto) =>
         Ok(await _playlists.EditAsync(id, dto, CurrentId));
 
     [Authorize(Policy = "Registered")]
-    [HttpDelete("{id:ulong}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(ulong id)
     {
         await _playlists.DeleteAsync(id, CurrentId, CurrentRole);
@@ -51,12 +51,12 @@ public class PlaylistsController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpPost("{id:ulong}/tracks")]
+    [HttpPost("{id}/tracks")]
     public async Task<IActionResult> AddTrack(ulong id, [FromBody] PlaylistAddTrackDto dto) =>
         Ok(await _playlists.AddTrackAsync(id, dto, CurrentId));
 
     [Authorize(Policy = "Registered")]
-    [HttpDelete("{id:ulong}/tracks/{trackId:ulong}")]
+    [HttpDelete("{id}/tracks/{trackId}")]
     public async Task<IActionResult> RemoveTrack(ulong id, ulong trackId)
     {
         await _playlists.RemoveTrackAsync(id, trackId, CurrentId);
@@ -64,22 +64,22 @@ public class PlaylistsController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpPut("{id:ulong}/tracks/{trackId:ulong}/position")]
+    [HttpPut("{id}/tracks/{trackId}/position")]
     public async Task<IActionResult> MoveTrack(ulong id, ulong trackId, [FromQuery] int position) =>
         Ok(await _playlists.MoveTrackAsync(id, trackId, position, CurrentId));
 
     [Authorize(Policy = "Registered")]
-    [HttpPut("{id:ulong}/tracks/{trackId:ulong}")]
+    [HttpPut("{id}/tracks/{trackId}")]
     public async Task<IActionResult> MoveTrackBody(ulong id, ulong trackId, [FromBody] PlaylistMoveTrackDto dto) =>
         Ok(await _playlists.MoveTrackAsync(id, trackId, dto.Position, CurrentId));
 
     [Authorize(Policy = "Registered")]
-    [HttpPost("{id:ulong}/collaborators")]
+    [HttpPost("{id}/collaborators")]
     public async Task<IActionResult> AddCollaborator(ulong id, [FromBody] PlaylistCollaboratorDto dto) =>
         Ok(await _playlists.AddCollaboratorAsync(id, dto, CurrentId));
 
     [Authorize(Policy = "Registered")]
-    [HttpDelete("{id:ulong}/collaborators/{userId:ulong}")]
+    [HttpDelete("{id}/collaborators/{userId}")]
     public async Task<IActionResult> RemoveCollaborator(ulong id, ulong userId)
     {
         await _playlists.RemoveCollaboratorAsync(id, userId, CurrentId);

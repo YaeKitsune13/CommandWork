@@ -23,7 +23,7 @@ public class AlbumsController : ApiControllerBase
         Ok(await _albums.GetAllAsync(search, ownerId, page, pageSize));
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> Get(ulong id) =>
         Ok(await _albums.GetAsync(id, CurrentIdOrNull, CurrentRole));
 
@@ -37,7 +37,7 @@ public class AlbumsController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpPut("{id:ulong}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Edit(ulong id, [FromBody] AlbumEditDto dto) =>
         Ok(await _albums.EditAsync(id, dto, CurrentId, CurrentRole));
 
@@ -50,7 +50,7 @@ public class AlbumsController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpDelete("{id:ulong}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(ulong id)
     {
         await _albums.DeleteAsync(id, CurrentId, CurrentRole);

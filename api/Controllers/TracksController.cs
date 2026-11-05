@@ -31,7 +31,7 @@ public class TracksController : ApiControllerBase
         Ok(await _tracks.GetCatalogAsync(search, genreId, albumId, ownerId, page, pageSize, CurrentIdOrNull));
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetById(ulong id) =>
         Ok(await _tracks.GetAsync(id, CurrentIdOrNull, CurrentRole));
 
@@ -41,12 +41,12 @@ public class TracksController : ApiControllerBase
         Ok(await _tracks.GetAsync(id, CurrentIdOrNull, CurrentRole));
 
     [AllowAnonymous]
-    [HttpGet("user/{userId:ulong}")]
+    [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetByUser(ulong userId, [FromQuery] string? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         Ok(await _tracks.GetByUserAsync(userId, status, page, pageSize, CurrentIdOrNull, CurrentRole));
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}/stream")]
+    [HttpGet("{id}/stream")]
     public async Task<IActionResult> Stream(ulong id)
     {
         var sound = await _tracks.GetSoundAsync(id, CurrentIdOrNull, CurrentRole);
@@ -67,7 +67,7 @@ public class TracksController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpPut("{id:ulong}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Edit(ulong id, [FromBody] TrackEditDto dto) =>
         Ok(await _tracks.EditAsync(id, dto, CurrentId, CurrentRole));
 
@@ -80,7 +80,7 @@ public class TracksController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpDelete("{id:ulong}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(ulong id)
     {
         await _tracks.DeleteAsync(id, CurrentId, CurrentRole);
@@ -96,7 +96,7 @@ public class TracksController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpPost("{id:ulong}/listen")]
+    [HttpPost("{id}/listen")]
     public async Task<IActionResult> RecordListen(ulong id)
     {
         await _users.RecordListenAsync(CurrentId, id, CurrentId);

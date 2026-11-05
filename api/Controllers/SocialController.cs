@@ -13,12 +13,12 @@ public class SocialController : ApiControllerBase
     public SocialController(ISocialService social) => _social = social;
 
     [Authorize(Policy = "Registered")]
-    [HttpPost("{id:ulong}/follow")]
+    [HttpPost("{id}/follow")]
     public async Task<IActionResult> Follow(ulong id) =>
         StatusCode(StatusCodes.Status201Created, await _social.FollowAsync(id, CurrentId));
 
     [Authorize(Policy = "Registered")]
-    [HttpDelete("{id:ulong}/follow")]
+    [HttpDelete("{id}/follow")]
     public async Task<IActionResult> Unfollow(ulong id)
     {
         await _social.UnfollowAsync(id, CurrentId);
@@ -26,7 +26,7 @@ public class SocialController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpPut("{id:ulong}/followers/{followerId:ulong}")]
+    [HttpPut("{id}/followers/{followerId}")]
     public async Task<IActionResult> AcceptFollow(ulong id, ulong followerId)
     {
         await _social.AcceptFollowAsync(id, followerId, CurrentId);
@@ -34,7 +34,7 @@ public class SocialController : ApiControllerBase
     }
 
     [Authorize(Policy = "Registered")]
-    [HttpDelete("{id:ulong}/followers/{followerId:ulong}")]
+    [HttpDelete("{id}/followers/{followerId}")]
     public async Task<IActionResult> RejectOrRemoveFollower(ulong id, ulong followerId)
     {
         await _social.RejectOrRemoveFollowerAsync(id, followerId, CurrentId);
@@ -42,17 +42,17 @@ public class SocialController : ApiControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}/followers")]
+    [HttpGet("{id}/followers")]
     public async Task<IActionResult> GetFollowers(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         Ok(await _social.GetFollowersAsync(id, page, pageSize));
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}/following")]
+    [HttpGet("{id}/following")]
     public async Task<IActionResult> GetFollowing(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         Ok(await _social.GetFollowingAsync(id, page, pageSize));
 
     [Authorize(Policy = "Registered")]
-    [HttpGet("{id:ulong}/follow-requests")]
+    [HttpGet("{id}/follow-requests")]
     public async Task<IActionResult> GetFollowRequests(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
         Ok(await _social.GetFollowRequestsAsync(id, CurrentId, page, pageSize));
 }

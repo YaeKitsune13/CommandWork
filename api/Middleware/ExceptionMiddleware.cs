@@ -59,6 +59,7 @@ public class ExceptionMiddleware
             await ctx.Response.WriteAsJsonAsync(new
             {
                 error = status == StatusCodes.Status500InternalServerError ? "Внутренняя ошибка сервера" : ex.Message,
+                details = status == StatusCodes.Status500InternalServerError ? ex.Message : null,
                 code,
                 fields
             });

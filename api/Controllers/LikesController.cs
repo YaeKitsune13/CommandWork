@@ -15,29 +15,29 @@ public class LikesController : ApiControllerBase
     public LikesController(ILikeService likes) => _likes = likes;
 
     [Authorize(Policy = "Registered")]
-    [HttpPut("{id:ulong}/reaction")]
+    [HttpPut("{id}/reaction")]
     public async Task<IActionResult> SetReaction(ulong id, [FromBody] SetReactionDto dto) =>
         Ok(await _likes.SetReactionAsync(id, CurrentId, dto.Type));
 
     [Authorize(Policy = "Registered")]
-    [HttpPost("{id:ulong}/like")]
+    [HttpPost("{id}/like")]
     public async Task<IActionResult> Like(ulong id) =>
         Ok(await _likes.SetReactionAsync(id, CurrentId, "like"));
 
     [Authorize(Policy = "Registered")]
-    [HttpPost("{id:ulong}/dislike")]
+    [HttpPost("{id}/dislike")]
     public async Task<IActionResult> Dislike(ulong id) =>
         Ok(await _likes.SetReactionAsync(id, CurrentId, "dislike"));
 
     [Authorize(Policy = "Registered")]
-    [HttpDelete("{id:ulong}/reaction")]
-    [HttpDelete("{id:ulong}/like")]
+    [HttpDelete("{id}/reaction")]
+    [HttpDelete("{id}/like")]
     public async Task<IActionResult> RemoveReaction(ulong id) =>
         Ok(await _likes.RemoveReactionAsync(id, CurrentId));
 
     [AllowAnonymous]
-    [HttpGet("{id:ulong}/reactions")]
-    [HttpGet("{id:ulong}/likes")]
+    [HttpGet("{id}/reactions")]
+    [HttpGet("{id}/likes")]
     public async Task<IActionResult> GetSummary(ulong id) =>
         Ok(await _likes.GetSummaryAsync(id, CurrentIdOrNull));
 
