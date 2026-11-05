@@ -15,7 +15,7 @@ public class ComplaintsController : ControllerBase
     public ComplaintsController(IComplaintService service) => _service = service;
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Policy = "Registered")]
     public Task<IActionResult> Create([FromBody] ComplaintCreateDto dto) =>
         Handle(async () =>
         {

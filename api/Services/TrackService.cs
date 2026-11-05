@@ -54,8 +54,13 @@ public class TrackService : ITrackService
 
         if (!await _db.Users.AnyAsync(u => u.Id == ownerId && !u.IsBlocked && u.DeletedAt == null))
             throw new ArgumentException("Пользователь не найден");
-
+        
         var fileUrl = await SaveFileAsync(dto.AudioFile, "music");
+        var duration = ReadDuration(fileUrl);   // новое
+        if (duration == null)
+        {
+            throw new ArgumentException("Не удалось прочитать аудиофайл");
+        }
         var imageUrl = dto.Image is { Length: > 0 } ? await SaveFileAsync(dto.Image, "images") : null;
 
         var music = new Music
@@ -66,13 +71,13 @@ public class TrackService : ITrackService
             AlbumId = dto.AlbumId,
             FileUrl = fileUrl,
             Image = imageUrl,
+            DurationSec = duration,             
             Status = "pending",
             CreatedAt = DateTime.UtcNow
         };
-
         _db.Musics.Add(music);
         await _db.SaveChangesAsync();
-        await _db.Entry(music).Reference(m => m.Artist).LoadAsync(); // для ArtistName
+        await _db.Entry(music).Reference(m => m.Artist).LoadAsync(); 
         return ToDto(music);
     }
 
@@ -162,4 +167,22 @@ public class TrackService : ITrackService
         RejectionReason = m.RejectionReason,
         CreatedAt = m.CreatedAt
     };
+    private uint? ReadDuration(string fileUrl)
+{
+    var path = GetPhysicalPath(fileUrl);
+    if (path == null)
+    {
+        return null;
+    }
+
+    try
+    {
+        using var tagFile = TagLib.File.Create(path);
+        return (uint)Math.Round(tagFile.Properties.Duration.TotalSeconds);
+    }
+    catch
+    {
+        return null;
+    }
+}
 }
