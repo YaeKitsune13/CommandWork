@@ -104,7 +104,6 @@ public class PlaylistsController : ControllerBase
             return Ok(new { message = "Соавтор удален" });
         });
 
-    // --- helpers ---
 
     private ulong? GetUserId()
     {
