@@ -1,23 +1,15 @@
 namespace api.Dtos;
 
-public record ReactionSummaryDto(ulong MusicId, int Likes, int Dislikes, string? MyReaction);
+public record SetReactionDto(string Type);
 
-public record LikedTrackDto(
-    ulong Id,
-    string Name,
-    string ArtistName,
-    string? Image,
-    uint? DurationSec,
-    DateTime LikedAt);
+public record ReactionSummaryDto(ulong TrackId, int Likes, int Dislikes, string? MyReaction);
 
 public record CommentTextDto(string Text);
 
 public record CommentDto(
     ulong Id,
-    ulong MusicId,
-    ulong UserId,
-    string? Nickname,
-    string? UserImage,
+    ulong TrackId,
+    UserBriefDto User,
     string Text,
     DateTime CreatedAt,
     DateTime UpdatedAt);

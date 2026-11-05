@@ -7,8 +7,6 @@ public record FollowResponseDto(
     DateTime CreatedAt);
 
 public record FollowUserItemDto(
-    ulong Id,
-    string? Nickname,
-    string? Image,
+    UserBriefDto User,
     string Status,
     DateTime CreatedAt);
