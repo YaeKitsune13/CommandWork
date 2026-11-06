@@ -9,3 +9,11 @@ body {
   background: #0a0a0c;
   color: #fff;
 }
+:root {
+  --card-bg: #b91c1c; 
+  --card-bg-hover: #991b1b; 
+  --card-border: #7f1d1d; 
+  --card-text: #ffffff;
+  --card-text-muted: #fecaca; 
+  --card-radius: 4px;
+}
