@@ -1,12 +1,23 @@
+namespace api.Dtos;
+
+public record UserBriefDto(ulong Id, string Nickname, string? Image);
+
+public record UserStatsDto(int Tracks, int Followers, int Following);
+
 public record UserProfileDto(
     ulong Id,
-    string? Nickname,
+    string Nickname,
     string? Image,
     string Privacy,
     string? Role,
     string? Email,
     string? Phone,
-    DateTime? CreatedAt);
+    DateTime? CreatedAt,
+    UserStatsDto? Stats = null,
+    string? FollowStatus = null,
+    bool IsMe = false,
+    bool IsRestricted = false,
+    bool IsBlocked = false);
 
 public record UpdateProfileDto(
     string? Email,
@@ -21,10 +32,7 @@ public record RecordListenDto(ulong MusicId);
 
 public record HistoryItemDto(
     ulong Id,
-    ulong MusicId,
-    string TrackName,
-    string? ArtistName,
-    uint? DurationSec,
-    DateTime ListenedAt);
+    DateTime ListenedAt,
+    TrackResponseDto Track);
 
 public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int Total);

@@ -1,39 +1,42 @@
-using System.Security.Claims;
 using api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers;
 
-[ApiController]
 [Route("api")]
-public class DiscoveryController : ControllerBase
+[Tags("Discovery")]
+public class DiscoveryController : ApiControllerBase
 {
     private readonly IDiscoveryService _discovery;
+    private readonly IAdminService _admin;
 
-    public DiscoveryController(IDiscoveryService discovery) => _discovery = discovery;
+    public DiscoveryController(IDiscoveryService discovery, IAdminService admin)
+    {
+        _discovery = discovery;
+        _admin = admin;
+    }
 
-    private ulong? CurrentId =>
-        ulong.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+    [AllowAnonymous]
+    [HttpGet("genres")]
+    public async Task<IActionResult> GetGenres() =>
+        Ok(await _admin.GetGenresAsync());
 
-    // GET api/search?query=...
     [AllowAnonymous]
     [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string query) =>
-        Ok(await _discovery.SearchAsync(query));
+    public async Task<IActionResult> Search([FromQuery] string? query, [FromQuery] int limit = 10) =>
+        Ok(await _discovery.SearchAsync(query, CurrentIdOrNull, limit));
 
-    // GET api/charts?period=week&genreId=1&limit=50
     [AllowAnonymous]
     [HttpGet("charts")]
     public async Task<IActionResult> GetCharts(
         [FromQuery] string? period = "week",
         [FromQuery] ulong? genreId = null,
         [FromQuery] int limit = 50) =>
-        Ok(await _discovery.GetChartsAsync(period, genreId, limit));
+        Ok(await _discovery.GetChartsAsync(period, genreId, limit, CurrentIdOrNull));
 
-    // GET api/recommendations?limit=20
     [AllowAnonymous]
     [HttpGet("recommendations")]
     public async Task<IActionResult> GetRecommendations([FromQuery] int limit = 20) =>
-        Ok(await _discovery.GetRecommendationsAsync(CurrentId, limit));
+        Ok(await _discovery.GetRecommendationsAsync(CurrentIdOrNull, limit));
 }

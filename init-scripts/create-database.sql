@@ -1,9 +1,24 @@
+-- Dinisify: coop_project, MySQL 8.0+
+-- Изменения относительно прошлой версии:
+--   1. Удалена таблица artist, из music и album убран artist_id.
+--      Автор трека и альбома = пользователь (owner_id).
+--   2. user.nickname теперь NOT NULL и UNIQUE (он стал публичным именем автора).
+--   3. music.name и album.name расширены до VARCHAR(255) (DTO допускает 200 символов).
+--   4. complaints: добавлено поле description.
+--   5. music: индекс (status, deleted_at, created_at) для каталога «новое».
+--   6. Добавлены базовые жанры (INSERT IGNORE в конце).
+--
+-- ВНИМАНИЕ: скрипт пересоздаёт все таблицы (DROP TABLE), данные будут потеряны.
+
 create database if not exists coop_project;
 use coop_project;
--- MySQL 8.0+
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- 0. Удаляем старую таблицу артистов, если она осталась от прошлой версии
+
+DROP TABLE IF EXISTS `artist`;
 
 -- 1. user
 
@@ -14,7 +29,7 @@ CREATE TABLE `user` (
                         `phone`         VARCHAR(32)  NULL,
                         `password_hash` VARCHAR(255) NOT NULL,
                         `image`         text NULL,
-                        `nickname`      VARCHAR(100) NULL,
+                        `nickname`      VARCHAR(100) NOT NULL,
                         `privacy`       ENUM('public', 'private') NOT NULL DEFAULT 'public',
     -- роль «guest» не хранится в БД: гость не зарегистрирован и строки в user не имеет
                         `role`          ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user',
@@ -23,42 +38,27 @@ CREATE TABLE `user` (
                         `updated_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                         `deleted_at`    DATETIME NULL COMMENT 'мягкое удаление',
                         UNIQUE KEY `uq_user_email` (`email`),
-                        UNIQUE KEY `uq_user_phone` (`phone`)
+                        UNIQUE KEY `uq_user_phone` (`phone`),
+                        UNIQUE KEY `uq_user_nickname` (`nickname`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 2. artist  (исполнители; заменяют текстовые поля author)
-
-DROP TABLE IF EXISTS `artist`;
-CREATE TABLE `artist` (
-                          `id`         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                          `name`       VARCHAR(255) NOT NULL,
-                          `image`      text NULL,
-                          `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                          UNIQUE KEY `uq_artist_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 3. album
+-- 2. album
 
 DROP TABLE IF EXISTS `album`;
 CREATE TABLE `album` (
                          `id`           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                         `name`         VARCHAR(50) NOT NULL,
-                         `artist_id`    BIGINT UNSIGNED NOT NULL,
-                         `owner_id`     BIGINT UNSIGNED NOT NULL COMMENT 'пользователь, создавший альбом',
+                         `name`         VARCHAR(255) NOT NULL,
+                         `owner_id`     BIGINT UNSIGNED NOT NULL COMMENT 'пользователь, создавший альбом (автор)',
                          `image`        text NULL,
                          `release_date` DATE NULL,
                          `created_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                         CONSTRAINT `fk_album_artist`
-                             FOREIGN KEY (`artist_id`) REFERENCES `artist` (`id`)
-                                 ON DELETE RESTRICT ON UPDATE CASCADE,
                          CONSTRAINT `fk_album_owner`
                              FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`)
                                  ON DELETE CASCADE ON UPDATE CASCADE,
-                         INDEX `idx_album_artist` (`artist_id`),
                          INDEX `idx_album_owner` (`owner_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 4. music_genre
+-- 3. music_genre
 
 DROP TABLE IF EXISTS `music_genre`;
 CREATE TABLE `music_genre` (
@@ -67,14 +67,13 @@ CREATE TABLE `music_genre` (
                                UNIQUE KEY `uq_music_genre_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 5. music
+-- 4. music
 
 DROP TABLE IF EXISTS `music`;
 CREATE TABLE `music` (
                          `id`                BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                         `name`              VARCHAR(50) NOT NULL,
-                         `artist_id`         BIGINT UNSIGNED NOT NULL,
-                         `owner_id`          BIGINT UNSIGNED NOT NULL COMMENT 'пользователь, загрузивший трек',
+                         `name`              VARCHAR(255) NOT NULL,
+                         `owner_id`          BIGINT UNSIGNED NOT NULL COMMENT 'пользователь, загрузивший трек (автор)',
                          `album_id`          BIGINT UNSIGNED NULL,
                          `file_url`          text NOT NULL,
                          `image`             text NULL,
@@ -85,9 +84,6 @@ CREATE TABLE `music` (
                          `moderated_at`      DATETIME NULL,
                          `created_at`        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                          `deleted_at`        DATETIME NULL COMMENT 'мягкое удаление',
-                         CONSTRAINT `fk_music_artist`
-                             FOREIGN KEY (`artist_id`) REFERENCES `artist` (`id`)
-                                 ON DELETE RESTRICT ON UPDATE CASCADE,
                          CONSTRAINT `fk_music_owner`
                              FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`)
                                  ON DELETE CASCADE ON UPDATE CASCADE,
@@ -97,14 +93,13 @@ CREATE TABLE `music` (
                          CONSTRAINT `fk_music_moderator`
                              FOREIGN KEY (`moderated_by`) REFERENCES `user` (`id`)
                                  ON DELETE SET NULL ON UPDATE CASCADE,
-                         INDEX `idx_music_artist` (`artist_id`),
                          INDEX `idx_music_owner` (`owner_id`),
                          INDEX `idx_music_album` (`album_id`),
-                         INDEX `idx_music_status` (`status`),
+                         INDEX `idx_music_status_created` (`status`, `deleted_at`, `created_at`),
                          INDEX `idx_music_moderator` (`moderated_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 6. playlist
+-- 5. playlist
 
 DROP TABLE IF EXISTS `playlist`;
 CREATE TABLE `playlist` (
@@ -122,7 +117,7 @@ CREATE TABLE `playlist` (
                             INDEX `idx_playlist_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 7. user_likes  (лайки/дизлайки треков)
+-- 6. user_likes  (лайки/дизлайки треков)
 
 DROP TABLE IF EXISTS `user_likes`;
 CREATE TABLE `user_likes` (
@@ -140,7 +135,7 @@ CREATE TABLE `user_likes` (
                               INDEX `idx_user_likes_music` (`music_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 8. user_listened  (история прослушиваний)
+-- 7. user_listened  (история прослушиваний)
 
 DROP TABLE IF EXISTS `user_listened`;
 CREATE TABLE `user_listened` (
@@ -158,7 +153,7 @@ CREATE TABLE `user_listened` (
                                  INDEX `idx_user_listened_music` (`music_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 9. music_genres  (M2M music <-> genre)
+-- 8. music_genres  (M2M music <-> genre)
 
 DROP TABLE IF EXISTS `music_genres`;
 CREATE TABLE `music_genres` (
@@ -174,7 +169,7 @@ CREATE TABLE `music_genres` (
                                 INDEX `idx_music_genres_genre` (`genre_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 10. playlist_tracks  (M2M playlist <-> music, с позицией и автором добавления)
+-- 9. playlist_tracks  (M2M playlist <-> music, с позицией и автором добавления)
 
 DROP TABLE IF EXISTS `playlist_tracks`;
 CREATE TABLE `playlist_tracks` (
@@ -198,7 +193,7 @@ CREATE TABLE `playlist_tracks` (
                                    INDEX `idx_playlist_tracks_added_by` (`added_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 11. playlist_collaborators
+-- 10. playlist_collaborators
 
 DROP TABLE IF EXISTS `playlist_collaborators`;
 CREATE TABLE `playlist_collaborators` (
@@ -215,7 +210,7 @@ CREATE TABLE `playlist_collaborators` (
                                           INDEX `idx_playlist_collab_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 12. follows  (подписки user -> user, со статусом заявки)
+-- 11. follows  (подписки user -> user, со статусом заявки)
 -- Для закрытых профилей (user.privacy = 'private') приложение создаёт подписку
 -- со статусом 'pending', владелец профиля переводит её в 'accepted'.
 -- Примечание: CHECK-constraint на follower_id <> following_id убран,
@@ -238,7 +233,7 @@ CREATE TABLE `follows` (
                            INDEX `idx_follows_following` (`following_id`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 13. comments
+-- 12. comments
 
 DROP TABLE IF EXISTS `comments`;
 CREATE TABLE `comments` (
@@ -259,7 +254,7 @@ CREATE TABLE `comments` (
                             INDEX `idx_comments_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 14. complaints  (жалоба на трек, пользователя или комментарий)
+-- 13. complaints  (жалоба на трек, пользователя или комментарий)
 -- Вместо полиморфной пары target_type/target_id используются три внешних ключа,
 -- из которых заполнен ровно один (проверяется триггерами ниже: CHECK здесь
 -- невозможен по той же причине, что и в follows — ошибка 3823).
@@ -272,6 +267,7 @@ CREATE TABLE `complaints` (
                               `target_user_id` BIGINT UNSIGNED NULL,
                               `comment_id`     BIGINT UNSIGNED NULL,
                               `reason`         TEXT NOT NULL,
+                              `description`    TEXT NULL COMMENT 'дополнительное пояснение от автора жалобы',
                               `status`         ENUM('pending', 'reviewed', 'resolved') NOT NULL DEFAULT 'pending',
                               `resolved_by`    BIGINT UNSIGNED NULL COMMENT 'модератор, рассмотревший жалобу',
                               `resolved_at`    DATETIME NULL,
@@ -301,7 +297,7 @@ CREATE TABLE `complaints` (
                               INDEX `idx_complaints_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 15. password_reset_tokens  (в БД хранится только хеш токена)
+-- 14. password_reset_tokens  (в БД хранится только хеш токена)
 
 DROP TABLE IF EXISTS `password_reset_tokens`;
 CREATE TABLE `password_reset_tokens` (
@@ -319,6 +315,8 @@ CREATE TABLE `password_reset_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- Триггеры
 
 DROP TRIGGER IF EXISTS `trg_follows_no_self_insert`;
 DROP TRIGGER IF EXISTS `trg_follows_no_self_update`;
@@ -368,3 +366,9 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- Базовые жанры (чтобы форма загрузки и фильтр чартов не были пустыми)
+
+INSERT IGNORE INTO `music_genre` (`name`) VALUES
+    ('Pop'), ('Rock'), ('Hip-Hop'), ('Electronic'), ('Jazz'),
+    ('Classical'), ('Metal'), ('R&B'), ('Folk'), ('Other');

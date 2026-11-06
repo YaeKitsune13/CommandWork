@@ -1,46 +1,50 @@
-using System.Security.Claims;
+using api.Dtos;
+using api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[ApiController]
+namespace api.Controllers;
+
 [Route("api/auth")]
-public class AuthController : ControllerBase
+[Tags("Auth")]
+public class AuthController : ApiControllerBase
 {
     private readonly IAuthService _auth;
 
     public AuthController(IAuthService auth) => _auth = auth;
 
+    [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterDto dto)
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        var ok = await _auth.RegisterAsync(dto);
-        return ok ? Ok() : Conflict("Email занят");
+        var token = await _auth.RegisterAsync(dto);
+        return StatusCode(StatusCodes.Status201Created, new TokenDto(token));
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto dto)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         var token = await _auth.LoginAsync(dto);
-        return token is null ? Unauthorized() : Ok(new TokenDto(token));
+        return Ok(new TokenDto(token));
     }
 
     [AllowAnonymous]
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
     {
-        var token = await _auth.ForgotPasswordAsync(dto.Email);
-
-        if (token is null)
+        var resetToken = await _auth.ForgotPasswordAsync(dto.Email);
+        return Ok(new
         {
-            return Ok(new { message = "Если такой email зарегистрирован, запрос обработан" });
-        }
-
-        return Ok(new { token, message = "Токен сброса пароля успешно сгенерирован" });
+            message = "Если такой email зарегистрирован, запрос обработан",
+            resetToken,
+            token = resetToken // на случай если старый фронт ждёт поле token
+        });
     }
 
     [AllowAnonymous]
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
     {
         await _auth.ResetPasswordAsync(dto);
         return NoContent();
@@ -50,18 +54,33 @@ public class AuthController : ControllerBase
     [HttpPost("guest")]
     public IActionResult Guest() => Ok(new TokenDto(JWTSetup.CreateGuestToken()));
 
-   [Authorize]
-[HttpGet("me")]
-public IActionResult Me()
-{
-    var idText = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    var role = User.FindFirstValue(ClaimTypes.Role);
-
-    if (!ulong.TryParse(idText, out var id))
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
     {
-        return Ok(new { isGuest = true, id = (ulong?)null, name = "Гость", role = role ?? "guest" });
-    }
+        var id = CurrentIdOrNull;
+        var role = CurrentRole;
 
-    return Ok(new { isGuest = false, id, name = User.Identity!.Name, role });
-}
+        if (id is null)
+        {
+            return Ok(new
+            {
+                id = (ulong?)null,
+                nickname = "Гость",
+                name = "Гость",
+                role = "guest",
+                isGuest = true
+            });
+        }
+
+        var nickname = User.Identity?.Name ?? "";
+        return Ok(new
+        {
+            id,
+            nickname,
+            name = nickname,
+            role,
+            isGuest = false
+        });
+    }
 }

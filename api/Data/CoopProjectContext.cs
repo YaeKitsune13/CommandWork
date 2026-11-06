@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 using api.Entities;
+
 namespace api.Data;
 
 public partial class CoopProjectContext : DbContext
@@ -17,8 +18,6 @@ public partial class CoopProjectContext : DbContext
     }
 
     public virtual DbSet<Album> Albums { get; set; }
-
-    public virtual DbSet<Artist> Artists { get; set; }
 
     public virtual DbSet<Comment> Comments { get; set; }
 
@@ -44,7 +43,8 @@ public partial class CoopProjectContext : DbContext
 
     public virtual DbSet<UserListened> UserListeneds { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -57,12 +57,9 @@ public partial class CoopProjectContext : DbContext
 
             entity.ToTable("album");
 
-            entity.HasIndex(e => e.ArtistId, "idx_album_artist");
-
             entity.HasIndex(e => e.OwnerId, "idx_album_owner");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.ArtistId).HasColumnName("artist_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
@@ -71,40 +68,16 @@ public partial class CoopProjectContext : DbContext
                 .HasColumnType("text")
                 .HasColumnName("image");
             entity.Property(e => e.Name)
-                .HasMaxLength(50)
+                .HasMaxLength(255)
                 .HasColumnName("name");
             entity.Property(e => e.OwnerId)
-                .HasComment("пользователь, создавший альбом")
+                .HasComment("пользователь, создавший альбом (автор)")
                 .HasColumnName("owner_id");
             entity.Property(e => e.ReleaseDate).HasColumnName("release_date");
-
-            entity.HasOne(d => d.Artist).WithMany(p => p.Albums)
-                .HasForeignKey(d => d.ArtistId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_album_artist");
 
             entity.HasOne(d => d.Owner).WithMany(p => p.Albums)
                 .HasForeignKey(d => d.OwnerId)
                 .HasConstraintName("fk_album_owner");
-        });
-
-        modelBuilder.Entity<Artist>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
-
-            entity.ToTable("artist");
-
-            entity.HasIndex(e => e.Name, "uq_artist_name").IsUnique();
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.Image)
-                .HasColumnType("text")
-                .HasColumnName("image");
-            entity.Property(e => e.Name).HasColumnName("name");
         });
 
         modelBuilder.Entity<Comment>(entity =>
@@ -174,6 +147,10 @@ public partial class CoopProjectContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
+            entity.Property(e => e.Description)
+                .HasComment("дополнительное пояснение от автора жалобы")
+                .HasColumnType("text")
+                .HasColumnName("description");
             entity.Property(e => e.MusicId).HasColumnName("music_id");
             entity.Property(e => e.Reason)
                 .HasColumnType("text")
@@ -254,17 +231,14 @@ public partial class CoopProjectContext : DbContext
 
             entity.HasIndex(e => e.AlbumId, "idx_music_album");
 
-            entity.HasIndex(e => e.ArtistId, "idx_music_artist");
-
             entity.HasIndex(e => e.ModeratedBy, "idx_music_moderator");
 
             entity.HasIndex(e => e.OwnerId, "idx_music_owner");
 
-            entity.HasIndex(e => e.Status, "idx_music_status");
+            entity.HasIndex(e => new { e.Status, e.DeletedAt, e.CreatedAt }, "idx_music_status_created");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AlbumId).HasColumnName("album_id");
-            entity.Property(e => e.ArtistId).HasColumnName("artist_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
@@ -287,10 +261,10 @@ public partial class CoopProjectContext : DbContext
                 .HasComment("модератор, принявший решение")
                 .HasColumnName("moderated_by");
             entity.Property(e => e.Name)
-                .HasMaxLength(50)
+                .HasMaxLength(255)
                 .HasColumnName("name");
             entity.Property(e => e.OwnerId)
-                .HasComment("пользователь, загрузивший трек")
+                .HasComment("пользователь, загрузивший трек (автор)")
                 .HasColumnName("owner_id");
             entity.Property(e => e.RejectionReason)
                 .HasColumnType("text")
@@ -304,11 +278,6 @@ public partial class CoopProjectContext : DbContext
                 .HasForeignKey(d => d.AlbumId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("fk_music_album");
-
-            entity.HasOne(d => d.Artist).WithMany(p => p.Musics)
-                .HasForeignKey(d => d.ArtistId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_music_artist");
 
             entity.HasOne(d => d.ModeratedByNavigation).WithMany(p => p.MusicModeratedByNavigations)
                 .HasForeignKey(d => d.ModeratedBy)
@@ -500,6 +469,8 @@ public partial class CoopProjectContext : DbContext
             entity.ToTable("user");
 
             entity.HasIndex(e => e.Email, "uq_user_email").IsUnique();
+
+            entity.HasIndex(e => e.Nickname, "uq_user_nickname").IsUnique();
 
             entity.HasIndex(e => e.Phone, "uq_user_phone").IsUnique();
 

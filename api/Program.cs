@@ -46,7 +46,7 @@ if (app.Environment.IsDevelopment())
     {
         // options.DisableAgent();
     });
-     using var scope = app.Services.CreateScope();
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<CoopProjectContext>();
     SeedData.Run(db);
 }
@@ -59,7 +59,7 @@ app.UseRouting();
 app.UseCors("AllowSpecificOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseStaticFiles();
 app.Use(async (ctx, next) =>
 {
     if (ctx.User.Identity?.IsAuthenticated == true)
@@ -74,6 +74,19 @@ app.Use(async (ctx, next) =>
     }
     await next();
 });
+
+app.MapGet("/info", async (IWebHostEnvironment env) =>
+{
+    var path = Path.Combine(env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot"), "spec.html");
+    if (!File.Exists(path))
+        path = Path.Combine(env.ContentRootPath, "spec.html");
+
+    if (!File.Exists(path))
+        return Results.NotFound("Файл spec.html не найден в контейнере");
+
+    var html = await File.ReadAllTextAsync(path);
+    return Results.Content(html, "text/html; charset=utf-8");
+}).AllowAnonymous();
 
 app.MapControllers();
 

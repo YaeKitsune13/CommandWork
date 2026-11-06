@@ -1,39 +1,85 @@
 import { useState } from "react";
 import { UserPlus, ArrowLeft } from "lucide-react";
+import { api } from "shared/hooks/client.js";
 import "./Register_window.css";
 
-function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
-  const [username, setUsername] = useState("");
+function Register_window({ auth, onRegisterSuccess, onGoToLogin, onCancel }) {
+  const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | registering | profile | done
 
-  const handleSubmit = (e) => {
+  const busy = status === "registering" || status === "profile";
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (
-      username.length == 0 ||
-      password.length == 0 ||
-      confirmPassword.length == 0
-    ) {
+    setError("");
+
+    const trimEmail = email.trim();
+    const trimNickname = nickname.trim();
+
+    if (!trimEmail || !trimNickname || !password || !confirmPassword) {
       setError("Пожалуйста, заполните все поля.");
       return;
     }
-
+    if (!/^\S+@\S+\.\S+$/.test(trimEmail)) {
+      setError("Некорректный email.");
+      return;
+    }
+    if (trimNickname.length < 2) {
+      setError("Имя должно быть не короче 2 символов.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Пароль должен быть не короче 6 символов.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Пароли не совпадают.");
       return;
     }
 
-    setError("");
-    // =====================================================================
-    // В реальном приложении здесь будет POST-запрос к /auth/register
-    onRegisterSuccess("user");
-    // =====================================================================
+    setStatus("registering");
+
+    /* Step 1 — register + auto-login (useAuth does both) */
+    const regResult = await auth.register(trimEmail, password);
+    if (!regResult.success) {
+      setError(regResult.error || "Не удалось зарегистрироваться");
+      setStatus("idle");
+      return;
+    }
+
+    /* Step 2 — save nickname */
+    setStatus("profile");
+    try {
+      const me = await auth.fetchMe?.();
+      const userId = me?.id ?? auth.user?.id;
+      if (!userId) throw new Error("Не удалось получить ID пользователя");
+
+      await api.put(`/users/${userId}`, {
+        nickname: trimNickname,
+        name: trimNickname,
+        email: trimEmail,
+      });
+
+      /* Step 3 — refresh auth so auth.user.name is the new value everywhere */
+      await auth.fetchMe?.();
+
+      setStatus("done");
+      onRegisterSuccess?.();
+    } catch (err) {
+      setError(
+        `Аккаунт создан, но имя не сохранилось: ${err.message}. ` +
+          `Вы можете изменить имя в Настройках.`,
+      );
+      setStatus("idle");
+    }
   };
 
   return (
-    <div className="register-container"> {/* Fixed lowercase 'r' */}
+    <div className="register-container">
       <button type="button" className="register-back-btn" onClick={onCancel}>
         <ArrowLeft size={18} /> Вернуться в каталог
       </button>
@@ -46,14 +92,34 @@ function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
 
         <form onSubmit={handleSubmit} className="register-form">
           <div className="register-input-group">
-            <label htmlFor="username">Email или Логин</label>
+            <label htmlFor="email">Email</label>
             <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Введите ваш email"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoComplete="email"
+              disabled={busy}
             />
+          </div>
+
+          <div className="register-input-group">
+            <label htmlFor="nickname">
+              Имя артиста <span style={{ color: "#E5383B" }}>*</span>
+            </label>
+            <input
+              id="nickname"
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="Как вас показывать в приложении?"
+              autoComplete="nickname"
+              disabled={busy}
+            />
+            <small style={{ color: "#888", fontSize: 12 }}>
+              Это имя будет использоваться как имя артиста при загрузке треков.
+            </small>
           </div>
 
           <div className="register-input-group">
@@ -63,7 +129,9 @@ function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Введите пароль"
+              placeholder="Минимум 6 символов"
+              autoComplete="new-password"
+              disabled={busy}
             />
           </div>
 
@@ -75,11 +143,16 @@ function Register_window({ onRegisterSuccess, onGoToLogin, onCancel }) {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Повторите пароль"
+              autoComplete="new-password"
+              disabled={busy}
             />
           </div>
 
-          <button type="submit" className="register-submit-btn">
-            <UserPlus size={18} /> Зарегистрироваться
+          <button type="submit" className="register-submit-btn" disabled={busy}>
+            <UserPlus size={18} />
+            {status === "registering" && "Создание аккаунта..."}
+            {status === "profile" && "Сохранение профиля..."}
+            {(status === "idle" || status === "done") && "Зарегистрироваться"}
           </button>
         </form>
 

@@ -15,7 +15,7 @@ public interface ICommentService
 
 public class CommentService : ICommentService
 {
-    private const int MaxLength = 1000;
+    private const int MaxLength = 2000;
 
     private readonly CoopProjectContext _db;
     public CommentService(CoopProjectContext db) => _db = db;
@@ -35,9 +35,12 @@ public class CommentService : ICommentService
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(c => new CommentDto(
-                c.Id, c.MusicId, c.UserId,
-                c.User.Nickname, c.User.Image,
-                c.Text, c.CreatedAt, c.UpdatedAt))
+                c.Id,
+                c.MusicId,
+                new UserBriefDto(c.User.Id, c.User.Nickname, c.User.Image),
+                c.Text,
+                c.CreatedAt,
+                c.UpdatedAt))
             .ToListAsync();
 
         return new PagedResult<CommentDto>(items, page, pageSize, total);
@@ -50,21 +53,29 @@ public class CommentService : ICommentService
 
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.DeletedAt == null)
             ?? throw new NotFoundException("Пользователь не найден");
-        if (user.IsBlocked)
-            throw new ForbiddenException("Вы заблокированы и не можете комментировать");
 
+        if (user.IsBlocked)
+            throw new ForbiddenException("Вы заблокированы и не можете комментировать", "blocked");
+
+        var now = DateTime.UtcNow;
         var comment = new Comment
         {
             MusicId = musicId,
             UserId = userId,
             Text = text,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = now,
+            UpdatedAt = now
         };
         _db.Comments.Add(comment);
         await _db.SaveChangesAsync();
 
-        return new CommentDto(comment.Id, musicId, userId, user.Nickname, user.Image,
-            comment.Text, comment.CreatedAt, comment.UpdatedAt);
+        return new CommentDto(
+            comment.Id,
+            musicId,
+            new UserBriefDto(user.Id, user.Nickname, user.Image),
+            comment.Text,
+            comment.CreatedAt,
+            comment.UpdatedAt);
     }
 
     public async Task<CommentDto> EditAsync(ulong commentId, ulong userId, string text)
@@ -82,9 +93,13 @@ public class CommentService : ICommentService
         comment.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
-        return new CommentDto(comment.Id, comment.MusicId, comment.UserId,
-            comment.User.Nickname, comment.User.Image,
-            comment.Text, comment.CreatedAt, comment.UpdatedAt);
+        return new CommentDto(
+            comment.Id,
+            comment.MusicId,
+            new UserBriefDto(comment.User.Id, comment.User.Nickname, comment.User.Image),
+            comment.Text,
+            comment.CreatedAt,
+            comment.UpdatedAt);
     }
 
     public async Task DeleteAsync(ulong commentId, ulong userId, string role)
