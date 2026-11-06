@@ -8,7 +8,6 @@ public static class SeedData
 {
     public static void Run(CoopProjectContext db)
     {
-        // если тестовые данные уже есть, выходим
         var already = db.Users.Where(u => u.Email == "user1@test.com").FirstOrDefault();
         if (already != null)
         {
