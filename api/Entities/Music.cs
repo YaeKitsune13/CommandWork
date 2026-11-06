@@ -9,10 +9,8 @@ public partial class Music
 
     public string Name { get; set; } = null!;
 
-    public ulong ArtistId { get; set; }
-
     /// <summary>
-    /// пользователь, загрузивший трек
+    /// пользователь, загрузивший трек (автор)
     /// </summary>
     public ulong OwnerId { get; set; }
 
@@ -43,8 +41,6 @@ public partial class Music
     public DateTime? DeletedAt { get; set; }
 
     public virtual Album? Album { get; set; }
-
-    public virtual Artist Artist { get; set; } = null!;
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 

@@ -1,0 +1,1771 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dinisify API v1 — Спецификация и Интерактивный Тестер</title>
+        <style>
+            :root {
+                --bg: #0f1117;
+                --panel: #161922;
+                --panel-hover: #1e2230;
+                --border: #2a2f42;
+                --text: #e2e8f0;
+                --muted: #94a3b8;
+                --accent: #6366f1;
+                --accent-hover: #4f46e5;
+                --get: #3b82f6;
+                --post: #10b981;
+                --put: #f59e0b;
+                --patch: #a855f7;
+                --delete: #ef4444;
+                --code-bg: #090b10;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                font-family:
+                    "Inter",
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    Roboto,
+                    sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                line-height: 1.5;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            /* Topbar */
+            header {
+                background: var(--panel);
+                border-bottom: 1px solid var(--border);
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                flex-wrap: wrap;
+                z-index: 10;
+            }
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 700;
+                font-size: 18px;
+            }
+            .badge-v1 {
+                background: var(--accent);
+                color: #fff;
+                font-size: 11px;
+                padding: 2px 8px;
+                border-radius: 999px;
+                font-weight: 600;
+            }
+            .auth-bar {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+                flex: 1;
+                justify-content: flex-end;
+            }
+            input,
+            select,
+            textarea {
+                background: var(--code-bg);
+                border: 1px solid var(--border);
+                color: var(--text);
+                padding: 7px 11px;
+                border-radius: 6px;
+                font-size: 13px;
+                outline: none;
+            }
+            input:focus,
+            select:focus,
+            textarea:focus {
+                border-color: var(--accent);
+            }
+            button {
+                background: var(--accent);
+                color: #fff;
+                border: none;
+                padding: 7px 13px;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: 0.15s;
+            }
+            button:hover {
+                background: var(--accent-hover);
+            }
+            button.secondary {
+                background: var(--panel-hover);
+                border: 1px solid var(--border);
+                color: var(--text);
+            }
+            button.secondary:hover {
+                border-color: var(--accent);
+            }
+
+            /* Layout */
+            .workspace {
+                display: grid;
+                grid-template-columns: 250px 1fr 420px;
+                flex: 1;
+                overflow: hidden;
+            }
+            aside.sidebar {
+                background: var(--panel);
+                border-right: 1px solid var(--border);
+                overflow-y: auto;
+                padding: 16px 10px;
+            }
+            .nav-group-title {
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--muted);
+                margin: 14px 10px 6px;
+                font-weight: 700;
+            }
+            .nav-btn {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                text-align: left;
+                background: transparent;
+                color: var(--text);
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-weight: 500;
+                font-size: 13.5px;
+                margin-bottom: 2px;
+            }
+            .nav-btn:hover,
+            .nav-btn.active {
+                background: var(--panel-hover);
+                color: #fff;
+            }
+            .nav-btn.active {
+                border-left: 3px solid var(--accent);
+            }
+
+            main.content {
+                overflow-y: auto;
+                padding: 24px 32px;
+            }
+            aside.inspector {
+                background: var(--panel);
+                border-left: 1px solid var(--border);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            /* Typography & Cards */
+            h1 {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+            h2 {
+                font-size: 19px;
+                margin: 24px 0 12px;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 6px;
+            }
+            h3 {
+                font-size: 15px;
+                margin: 16px 0 8px;
+                color: #cbd5e1;
+            }
+            p {
+                color: var(--muted);
+                font-size: 14px;
+                margin-bottom: 12px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 12px 0 20px;
+                font-size: 13px;
+            }
+            th,
+            td {
+                border: 1px solid var(--border);
+                padding: 8px 12px;
+                text-align: left;
+            }
+            th {
+                background: var(--panel);
+                color: #fff;
+            }
+            td {
+                background: rgba(22, 25, 34, 0.5);
+            }
+
+            pre {
+                background: var(--code-bg);
+                border: 1px solid var(--border);
+                padding: 12px;
+                border-radius: 8px;
+                overflow-x: auto;
+                font-size: 12.5px;
+                color: #a5b4fc;
+                margin-bottom: 14px;
+            }
+            code {
+                font-family: "JetBrains Mono", "Fira Code", monospace;
+                font-size: 12.5px;
+            }
+
+            /* Endpoint Card */
+            .ep-card {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                margin-bottom: 12px;
+                overflow: hidden;
+            }
+            .ep-header {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 11px 16px;
+                cursor: pointer;
+                user-select: none;
+            }
+            .ep-header:hover {
+                background: var(--panel-hover);
+            }
+            .method {
+                font-size: 11px;
+                font-weight: 800;
+                padding: 3px 8px;
+                border-radius: 4px;
+                min-width: 62px;
+                text-align: center;
+                color: #fff;
+            }
+            .m-GET {
+                background: var(--get);
+            }
+            .m-POST {
+                background: var(--post);
+            }
+            .m-PUT {
+                background: var(--put);
+                color: #111;
+            }
+            .m-PATCH {
+                background: var(--patch);
+            }
+            .m-DELETE {
+                background: var(--delete);
+            }
+
+            .ep-path {
+                font-family: monospace;
+                font-weight: 600;
+                font-size: 14px;
+            }
+            .ep-desc {
+                color: var(--muted);
+                font-size: 13px;
+                margin-left: auto;
+            }
+            .ep-role {
+                font-size: 11px;
+                padding: 2px 7px;
+                border-radius: 4px;
+                background: var(--code-bg);
+                border: 1px solid var(--border);
+                color: var(--muted);
+            }
+
+            .ep-body {
+                display: none;
+                padding: 16px;
+                border-top: 1px solid var(--border);
+                background: rgba(9, 11, 16, 0.4);
+            }
+            .ep-card.open .ep-body {
+                display: block;
+            }
+
+            .form-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+            .field label {
+                display: block;
+                font-size: 11.5px;
+                color: var(--muted);
+                margin-bottom: 4px;
+            }
+            .field input,
+            .field select,
+            .field textarea {
+                width: 100%;
+            }
+
+            /* Inspector */
+            .insp-header {
+                padding: 12px 16px;
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-weight: 600;
+                font-size: 13.5px;
+            }
+            .status-pill {
+                font-size: 12px;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-family: monospace;
+            }
+            .s-ok {
+                background: rgba(16, 185, 129, 0.2);
+                color: #34d399;
+            }
+            .s-err {
+                background: rgba(239, 68, 68, 0.2);
+                color: #f87171;
+            }
+            .insp-body {
+                padding: 14px;
+                overflow-y: auto;
+                flex: 1;
+                font-family: monospace;
+                font-size: 12.5px;
+                white-space: pre-wrap;
+                background: var(--code-bg);
+                color: #e2e8f0;
+            }
+            .audio-box {
+                padding: 10px 14px;
+                border-bottom: 1px solid var(--border);
+                background: var(--panel-hover);
+                display: none;
+            }
+            .audio-box audio {
+                width: 100%;
+                height: 36px;
+                margin-top: 6px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="brand">
+                <span>🎵 Dinisify API</span>
+                <span class="badge-v1">v1.0 (No-Artist Edition)</span>
+            </div>
+
+            <div class="auth-bar">
+                <input
+                    id="baseUrl"
+                    value="http://localhost:8080"
+                    style="width: 190px"
+                    title="Адрес сервера API"
+                />
+                <button
+                    class="secondary"
+                    onclick="quickLogin('user1@test.com', '123456')"
+                    title="Вход из SeedData"
+                >
+                    👤 User 1
+                </button>
+                <button
+                    class="secondary"
+                    onclick="quickLogin('user2@test.com', '123456')"
+                    title="Вход из SeedData"
+                >
+                    👤 User 2
+                </button>
+                <button class="secondary" onclick="quickGuest()">
+                    👻 Гость
+                </button>
+                <input
+                    id="jwtInput"
+                    placeholder="Bearer JWT токен (сохраняется автоматически)"
+                    style="width: 240px"
+                    oninput="saveToken(this.value)"
+                />
+                <button class="secondary" onclick="checkMe()">
+                    🔍 Кто я (/me)
+                </button>
+                <button onclick="downloadMarkdown()">📥 Скачать .MD</button>
+            </div>
+        </header>
+
+        <div class="workspace">
+            <!-- Левое меню -->
+            <aside class="sidebar">
+                <div class="nav-group-title">Документация</div>
+                <button
+                    class="nav-btn active"
+                    onclick="showTab('spec-overview', this)"
+                >
+                    📖 1. Общие правила и Ошибки
+                </button>
+                <button class="nav-btn" onclick="showTab('spec-dtos', this)">
+                    📦 2. Единые JSON-объекты (DTO)
+                </button>
+                <button class="nav-btn" onclick="showTab('spec-screens', this)">
+                    🖥 3. Экран Веба → Запросы
+                </button>
+                <button
+                    class="nav-btn"
+                    onclick="showTab('spec-migration', this)"
+                >
+                    🔄 4. Что изменилось (Миграция)
+                </button>
+
+                <div class="nav-group-title">Интерактивный Тестер API</div>
+                <button class="nav-btn" onclick="showTab('cat-auth', this)">
+                    🔐 Авторизация (/auth)
+                </button>
+                <button class="nav-btn" onclick="showTab('cat-users', this)">
+                    👥 Пользователи (/users)
+                </button>
+                <button class="nav-btn" onclick="showTab('cat-social', this)">
+                    🤝 Подписки (/users/follow)
+                </button>
+                <button class="nav-btn" onclick="showTab('cat-tracks', this)">
+                    🎧 Треки и Стриминг (/tracks)
+                </button>
+                <button
+                    class="nav-btn"
+                    onclick="showTab('cat-engagement', this)"
+                >
+                    ❤️ Лайки и Комменты
+                </button>
+                <button class="nav-btn" onclick="showTab('cat-albums', this)">
+                    💿 Альбомы (/albums)
+                </button>
+                <button
+                    class="nav-btn"
+                    onclick="showTab('cat-playlists', this)"
+                >
+                    📂 Плейлисты (/playlists)
+                </button>
+                <button
+                    class="nav-btn"
+                    onclick="showTab('cat-discovery', this)"
+                >
+                    🔥 Поиск, Чарты и Жанры
+                </button>
+                <button
+                    class="nav-btn"
+                    onclick="showTab('cat-moderation', this)"
+                >
+                    🛡️ Жалобы и Модерация
+                </button>
+                <button class="nav-btn" onclick="showTab('cat-admin', this)">
+                    ⚙️ Админ-панель (/admin)
+                </button>
+            </aside>
+
+            <!-- Центральная часть -->
+            <main class="content" id="mainContent">
+                <!-- Вкладка 1: Общие правила -->
+                <section id="spec-overview" class="tab-pane">
+                    <h1>Спецификация API Dinisify (v1)</h1>
+                    <p>
+                        Единый контракт для бэкенда и веб-клиента. Главное
+                        правило:
+                        <b
+                            >вебу хватает одного запроса на экран и одного
+                            парсера на сущность</b
+                        >.
+                    </p>
+
+                    <h2>1. Ключевые архитектурные решения</h2>
+                    <table>
+                        <tr>
+                            <th>Решение</th>
+                            <th>Описание для фронтенда</th>
+                        </tr>
+                        <tr>
+                            <td><b>Автор = Пользователь</b></td>
+                            <td>
+                                Таблицы <code>artist</code> больше нет. Везде
+                                вместо <code>artistId</code> и
+                                <code>artistName</code> возвращается вложенный
+                                объект
+                                <code>owner: { id, nickname, image }</code>.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Единый TrackDto</b></td>
+                            <td>
+                                Один и тот же формат трека возвращается везде: в
+                                каталоге, поиске, альбоме, плейлисте, истории,
+                                лайках, чартах и на модерации.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Единая пагинация</b></td>
+                            <td>
+                                Любой постраничный список принимает
+                                <code>?page=1&pageSize=20</code> и возвращает
+                                <code
+                                    >{ items: [], page: 1, pageSize: 20, total:
+                                    134 }</code
+                                >.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Аудио-стриминг</b></td>
+                            <td>
+                                В каждом треке есть поле
+                                <code
+                                    >streamUrl: "/api/tracks/{id}/stream"</code
+                                >
+                                с поддержкой перемотки (HTTP Range 206).
+                            </td>
+                        </tr>
+                    </table>
+
+                    <h2>2. Единый формат ошибок (4xx и 5xx)</h2>
+                    <p>
+                        Любая ошибка от сервера всегда возвращает одинаковую
+                        JSON-структуру:
+                    </p>
+                    <pre><code>{
+  "error": "Пользователь с такими данными уже существует",
+  "code": "conflict",
+  "fields": {
+    "email": ["Этот email уже занят"],
+    "nickname": ["Этот никнейм уже занят"]
+  }
+}</code></pre>
+                    <table>
+                        <tr>
+                            <th>HTTP код</th>
+                            <th>Поле code</th>
+                            <th>Когда возникает</th>
+                        </tr>
+                        <tr>
+                            <td><code>400</code></td>
+                            <td>
+                                <code>validation</code> /
+                                <code>bad_request</code>
+                            </td>
+                            <td>
+                                Некорректные поля формы (подробности в
+                                <code>fields</code>) или недопустимое действие
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>401</code></td>
+                            <td><code>unauthorized</code></td>
+                            <td>
+                                Токен не передан, истёк, либо неверный
+                                логин/пароль
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>403</code></td>
+                            <td>
+                                <code>forbidden</code> / <code>blocked</code>
+                            </td>
+                            <td>
+                                Недостаточно прав (чужой ресурс, гость) или
+                                аккаунт заблокирован (<code>blocked</code>)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>404</code></td>
+                            <td><code>not_found</code></td>
+                            <td>
+                                Объект не существует или скрыт настройками
+                                приватности
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>409</code></td>
+                            <td><code>conflict</code></td>
+                            <td>
+                                Дубликат: email, никнейм, телефон, жалоба,
+                                подписка, трек в плейлисте
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>500</code></td>
+                            <td><code>server_error</code></td>
+                            <td>Внутренняя ошибка сервера</td>
+                        </tr>
+                    </table>
+                </section>
+
+                <!-- Вкладка 2: DTO -->
+                <section id="spec-dtos" class="tab-pane" style="display: none">
+                    <h1>Единые JSON-объекты (DTO)</h1>
+                    <p>Эти модели идентичны во всех ответах API.</p>
+
+                    <h3>UserBriefDto (Владелец / Автор / Пользователь)</h3>
+                    <pre><code>{
+  "id": 1,
+  "nickname": "user1",
+  "image": "/uploads/images/avatar.jpg"
+}</code></pre>
+
+                    <h3>TrackResponseDto (Единый формат трека)</h3>
+                    <pre><code>{
+  "id": 12,
+  "name": "Lose Yourself",
+  "owner": { "id": 1, "nickname": "user1", "image": null },
+  "album": { "id": 3, "name": "8 Mile" },
+  "genres": [{ "id": 2, "name": "Hip-Hop" }],
+  "fileUrl": "/uploads/music/a1b2.mp3",
+  "streamUrl": "/api/tracks/12/stream",
+  "image": "/uploads/images/cover.jpg",
+  "durationSec": 326,
+  "status": "approved",
+  "rejectionReason": null,
+  "createdAt": "2026-11-05T10:15:00Z",
+  "stats": { "likes": 10, "dislikes": 1, "comments": 4, "listens": 154 },
+  "myReaction": "like"
+}</code></pre>
+
+                    <h3>AlbumResponseDto</h3>
+                    <pre><code>{
+  "id": 3,
+  "name": "8 Mile",
+  "owner": { "id": 1, "nickname": "user1", "image": null },
+  "image": "/uploads/albums/cov.jpg",
+  "releaseDate": "2026-11-05",
+  "tracksCount": 8,
+  "tracks": [ /* массив TrackResponseDto при запросе GET /api/albums/{id} */ ]
+}</code></pre>
+
+                    <h3>PlaylistResponseDto</h3>
+                    <pre><code>{
+  "id": 4,
+  "name": "Для бега",
+  "description": "Бодрые треки",
+  "privacy": "public",
+  "isPublic": true,
+  "owner": { "id": 1, "nickname": "user1", "image": null },
+  "tracksCount": 1,
+  "myRole": "owner",
+  "createdAt": "2026-11-01T09:00:00Z",
+  "updatedAt": "2026-11-02T12:00:00Z",
+  "tracks": [ { "position": 1, "track": { /* TrackResponseDto */ } } ],
+  "collaborators": [ { "user": { "id": 2, "nickname": "user2", "image": null }, "role": "editor" } ]
+}</code></pre>
+
+                    <h3>UserProfileDto</h3>
+                    <pre><code>{
+  "id": 1,
+  "nickname": "user1",
+  "image": null,
+  "privacy": "public",
+  "role": "user",
+  "email": "user1@test.com",
+  "phone": null,
+  "createdAt": "2026-10-01T08:00:00Z",
+  "stats": { "tracks": 3, "followers": 10, "following": 4 },
+  "followStatus": null,
+  "isMe": true,
+  "isRestricted": false,
+  "isBlocked": false
+}</code></pre>
+                </section>
+
+                <!-- Вкладка 3: Экраны -->
+                <section
+                    id="spec-screens"
+                    class="tab-pane"
+                    style="display: none"
+                >
+                    <h1>Шпаргалка для фронтенда: Экран → Запросы API</h1>
+                    <table>
+                        <tr>
+                            <th>Экран приложения</th>
+                            <th>Какие запросы делать при открытии</th>
+                        </tr>
+                        <tr>
+                            <td><b>Главная / Обзор</b></td>
+                            <td>
+                                <code>GET /api/charts</code>,
+                                <code>GET /api/recommendations</code>,
+                                <code>GET /api/genres</code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Глобальный поиск</b></td>
+                            <td>
+                                <code>GET /api/search?query=...</code>
+                                (возвращает сразу <code>tracks</code>,
+                                <code>users</code>, <code>albums</code>,
+                                <code>playlists</code>)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Страница трека</b></td>
+                            <td>
+                                <code>GET /api/tracks/{id}</code>,
+                                <code
+                                    >GET /api/tracks/{id}/comments?page=1</code
+                                >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Страница альбома</b></td>
+                            <td>
+                                <code>GET /api/albums/{id}</code> (все треки
+                                альбома уже внутри поля <code>tracks</code>)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Страница плейлиста</b></td>
+                            <td>
+                                <code>GET /api/playlists/{id}</code> (все треки
+                                и соавторы уже внутри)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Профиль пользователя / автора</b></td>
+                            <td>
+                                <code>GET /api/users/{id}</code>,
+                                <code>GET /api/users/{id}/tracks</code>,
+                                <code>GET /api/users/{id}/albums</code>,
+                                <code>GET /api/users/{id}/playlists</code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Кабинет автора («Мои загрузки»)</b></td>
+                            <td>
+                                <code
+                                    >GET
+                                    /api/users/{myId}/tracks?status=pending</code
+                                >
+                                (или без <code>status</code> — вернет все свои
+                                треки вместе с <code>rejectionReason</code>)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Моя медиатека</b></td>
+                            <td>
+                                <code>GET /api/users/{myId}/likes</code>,
+                                <code>GET /api/playlists/my</code>,
+                                <code>GET /api/users/{myId}/history</code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Панель модератора</b></td>
+                            <td>
+                                <code>GET /api/moderator/tracks/pending</code>,
+                                <code
+                                    >GET
+                                    /api/moderator/complaints?status=pending</code
+                                >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Панель администратора</b></td>
+                            <td>
+                                <code>GET /api/admin/analytics</code>,
+                                <code>GET /api/admin/users</code>,
+                                <code>GET /api/admin/genres</code>
+                            </td>
+                        </tr>
+                    </table>
+                </section>
+
+                <!-- Вкладка 4: Миграция -->
+                <section
+                    id="spec-migration"
+                    class="tab-pane"
+                    style="display: none"
+                >
+                    <h1>Список изменений (От старой версии к v1)</h1>
+                    <table>
+                        <tr>
+                            <th>Было (v0)</th>
+                            <th>Стало (v1)</th>
+                            <th>Примечание</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <code>ArtistId</code> при загрузке трека/альбома
+                            </td>
+                            <td>Удалено</td>
+                            <td>
+                                Владелец (<code>owner</code>) автоматически
+                                берётся из JWT-токена
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <code>artistId</code>, <code>artistName</code> в
+                                ответах
+                            </td>
+                            <td><code>owner: { id, nickname, image }</code></td>
+                            <td>Единый объект автора во всех ответах</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <code>GET /api/music/artist/{artistId}</code>
+                            </td>
+                            <td><code>GET /api/users/{id}/tracks</code></td>
+                            <td>
+                                Также доступен алиас
+                                <code>GET /api/tracks/user/{userId}</code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>GET /api/music/meta?id=1</code></td>
+                            <td><code>GET /api/tracks/{id}</code></td>
+                            <td>
+                                Старый маршрут оставлен как алиас для обратной
+                                совместимости
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>GET /api/music/sound?id=1</code></td>
+                            <td><code>GET /api/tracks/{id}/stream</code></td>
+                            <td>Поддерживает перемотку <code>Range</code></td>
+                        </tr>
+                    </table>
+                </section>
+
+                <!-- Контейнер для динамических карточек эндпоинтов -->
+                <div id="endpointsContainer"></div>
+            </main>
+
+            <!-- Правая панель: Инспектор ответов -->
+            <aside class="inspector">
+                <div class="insp-header">
+                    <span>📡 Ответ сервера</span>
+                    <span id="respStatus" class="status-pill"
+                        >Ожидание запроса...</span
+                    >
+                </div>
+                <div id="audioPlayerBox" class="audio-box">
+                    <div style="font-size: 12px; color: #cbd5e1">
+                        🎧 Проверка аудиопотока (Stream):
+                    </div>
+                    <audio id="audioPlayer" controls></audio>
+                </div>
+                <div id="respBody" class="insp-body">
+                    // Нажми на любой запрос слева или кнопку "Кто я (/me)"
+                    сверху, чтобы увидеть живой ответ от вашего контейнера
+                    Docker.
+                </div>
+            </aside>
+        </div>
+
+        <script>
+            const ENDPOINTS = {
+                "cat-auth": {
+                    title: "🔐 Авторизация (/api/auth)",
+                    items: [
+                        {
+                            method: "POST",
+                            path: "/api/auth/register",
+                            role: "Все",
+                            desc: "Регистрация (сразу возвращает JWT)",
+                            body: {
+                                email: "newuser@test.com",
+                                password: "123456",
+                                nickname: "new_creator",
+                                phone: null,
+                            },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/auth/login",
+                            role: "Все",
+                            desc: "Вход по email и паролю",
+                            body: {
+                                email: "user1@test.com",
+                                password: "123456",
+                            },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/auth/guest",
+                            role: "Все",
+                            desc: "Получить гостевой токен",
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/auth/me",
+                            role: "С токеном",
+                            desc: "Проверить текущий токен и роль",
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/auth/forgot-password",
+                            role: "Все",
+                            desc: "Запросить токен сброса пароля",
+                            body: { email: "user1@test.com" },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/auth/reset-password",
+                            role: "Все",
+                            desc: "Установить новый пароль по токену",
+                            body: { token: "", newPassword: "654321" },
+                        },
+                    ],
+                },
+                "cat-users": {
+                    title: "👥 Пользователи и Профиль (/api/users)",
+                    items: [
+                        {
+                            method: "GET",
+                            path: "/api/users",
+                            role: "Все",
+                            desc: "Поиск авторов/пользователей",
+                            query: { search: "", page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/users/{id}",
+                            role: "Все",
+                            desc: "Профиль пользователя со статистикой",
+                            params: { id: 1 },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/users/{id}",
+                            role: "Владелец / Admin",
+                            desc: "Обновить профиль",
+                            params: { id: 1 },
+                            body: {
+                                nickname: "user1_updated",
+                                privacy: "public",
+                                phone: "+79990001122",
+                            },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/users/{id}/password",
+                            role: "Владелец",
+                            desc: "Сменить пароль",
+                            params: { id: 1 },
+                            body: {
+                                oldPassword: "123456",
+                                newPassword: "123456",
+                            },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/users/{id}/tracks",
+                            role: "Все",
+                            desc: "Треки пользователя (автора)",
+                            params: { id: 1 },
+                            query: { status: "", page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/users/{id}/albums",
+                            role: "Все",
+                            desc: "Альбомы пользователя",
+                            params: { id: 1 },
+                            query: { page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/users/{id}/playlists",
+                            role: "Все",
+                            desc: "Плейлисты пользователя",
+                            params: { id: 1 },
+                            query: { page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/users/{id}/likes",
+                            role: "Владелец / Admin",
+                            desc: "Понравившиеся треки",
+                            params: { id: 1 },
+                            query: { page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/users/{id}/history",
+                            role: "Владелец / Admin",
+                            desc: "История прослушиваний",
+                            params: { id: 1 },
+                            query: { page: 1, pageSize: 20 },
+                        },
+                    ],
+                },
+                "cat-social": {
+                    title: "🤝 Подписки и Друзья (/api/users/{id}/follow)",
+                    items: [
+                        {
+                            method: "GET",
+                            path: "/api/users/{id}/followers",
+                            role: "Все",
+                            desc: "Список подписчиков",
+                            params: { id: 1 },
+                            query: { page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/users/{id}/following",
+                            role: "Все",
+                            desc: "На кого подписан пользователь",
+                            params: { id: 1 },
+                            query: { page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/users/{id}/follow-requests",
+                            role: "Владелец",
+                            desc: "Входящие заявки (для закрытого профиля)",
+                            params: { id: 4 },
+                            query: { page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/users/{id}/follow",
+                            role: "User+",
+                            desc: "Подписаться на пользователя",
+                            params: { id: 2 },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/users/{id}/follow",
+                            role: "User+",
+                            desc: "Отписаться от пользователя",
+                            params: { id: 2 },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/users/{id}/followers/{followerId}",
+                            role: "Владелец",
+                            desc: "Принять заявку в подписчики",
+                            params: { id: 4, followerId: 3 },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/users/{id}/followers/{followerId}",
+                            role: "Владелец",
+                            desc: "Отклонить заявку / удалить подписчика",
+                            params: { id: 4, followerId: 3 },
+                        },
+                    ],
+                },
+                "cat-tracks": {
+                    title: "🎧 Треки и Стриминг (/api/tracks)",
+                    items: [
+                        {
+                            method: "GET",
+                            path: "/api/tracks",
+                            role: "Все",
+                            desc: "Каталог одобренных треков с фильтрами",
+                            query: {
+                                search: "",
+                                genreId: "",
+                                albumId: "",
+                                ownerId: "",
+                                page: 1,
+                                pageSize: 20,
+                            },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/tracks/{id}",
+                            role: "Все",
+                            desc: "Получить метаданные трека (TrackDto)",
+                            params: { id: 1 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/tracks/{id}/stream",
+                            role: "Все",
+                            desc: "Аудиопоток трека (откроется в плеере справа)",
+                            params: { id: 1 },
+                            isStream: true,
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/tracks",
+                            role: "User+",
+                            desc: "Загрузить новый трек (multipart/form-data, без ArtistId!)",
+                            multipart: [
+                                {
+                                    name: "Name",
+                                    type: "text",
+                                    value: "Мой Новый Трек",
+                                },
+                                { name: "AlbumId", type: "text", value: "" },
+                                { name: "AudioFile", type: "file" },
+                                { name: "Image", type: "file" },
+                            ],
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/tracks/{id}",
+                            role: "Владелец / Admin",
+                            desc: "Редактировать название, альбом или жанры трека",
+                            params: { id: 1 },
+                            body: {
+                                name: "Обновленное название",
+                                albumId: null,
+                                genreIds: [1],
+                            },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/tracks/{id}",
+                            role: "Владелец / Mod+",
+                            desc: "Удалить трек (мягкое удаление)",
+                            params: { id: 1 },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/tracks/{id}/listen",
+                            role: "User+",
+                            desc: "Записать прослушивание трека",
+                            params: { id: 1 },
+                        },
+                    ],
+                },
+                "cat-engagement": {
+                    title: "❤️ Лайки и Комментарии",
+                    items: [
+                        {
+                            method: "GET",
+                            path: "/api/tracks/{id}/reactions",
+                            role: "Все",
+                            desc: "Сводка лайков и дизлайков трека",
+                            params: { id: 1 },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/tracks/{id}/reaction",
+                            role: "User+",
+                            desc: "Поставить like или dislike",
+                            params: { id: 1 },
+                            body: { type: "like" },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/tracks/{id}/reaction",
+                            role: "User+",
+                            desc: "Убрать свою реакцию",
+                            params: { id: 1 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/tracks/{musicId}/comments",
+                            role: "Все",
+                            desc: "Список комментариев к треку",
+                            params: { musicId: 1 },
+                            query: { page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/tracks/{musicId}/comments",
+                            role: "User+",
+                            desc: "Написать комментарий",
+                            params: { musicId: 1 },
+                            body: { text: "Отличный трек!" },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/comments/{id}",
+                            role: "Владелец",
+                            desc: "Изменить свой комментарий",
+                            params: { id: 1 },
+                            body: { text: "Изменённый комментарий" },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/comments/{id}",
+                            role: "Владелец / Mod+",
+                            desc: "Удалить комментарий",
+                            params: { id: 1 },
+                        },
+                    ],
+                },
+                "cat-albums": {
+                    title: "💿 Альбомы (/api/albums)",
+                    items: [
+                        {
+                            method: "GET",
+                            path: "/api/albums",
+                            role: "Все",
+                            desc: "Список всех альбомов",
+                            query: {
+                                search: "",
+                                ownerId: "",
+                                page: 1,
+                                pageSize: 20,
+                            },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/albums/{id}",
+                            role: "Все",
+                            desc: "Детали альбома вместе со списком треков",
+                            params: { id: 1 },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/albums",
+                            role: "User+",
+                            desc: "Создать альбом (multipart/form-data, владелец из JWT)",
+                            multipart: [
+                                {
+                                    name: "Name",
+                                    type: "text",
+                                    value: "Мой Дебютный Альбом",
+                                },
+                                {
+                                    name: "ReleaseDate",
+                                    type: "text",
+                                    value: "2026-11-05",
+                                },
+                                { name: "Image", type: "file" },
+                            ],
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/albums/{id}",
+                            role: "Владелец / Admin",
+                            desc: "Обновить альбом",
+                            params: { id: 1 },
+                            body: {
+                                name: "Новое имя альбома",
+                                releaseDate: "2026-11-05",
+                            },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/albums/{id}",
+                            role: "Владелец / Admin",
+                            desc: "Удалить альбом",
+                            params: { id: 1 },
+                        },
+                    ],
+                },
+                "cat-playlists": {
+                    title: "📂 Плейлисты (/api/playlists)",
+                    items: [
+                        {
+                            method: "GET",
+                            path: "/api/playlists",
+                            role: "Все",
+                            desc: "Публичные плейлисты",
+                            query: {
+                                search: "",
+                                ownerId: "",
+                                page: 1,
+                                pageSize: 20,
+                            },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/playlists/my",
+                            role: "User+",
+                            desc: "Мои плейлисты (включая доступные мне как соавтору)",
+                            query: { page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/playlists/{id}",
+                            role: "Все / Соавторы",
+                            desc: "Плейлист с треками и соавторами",
+                            params: { id: 1 },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/playlists",
+                            role: "User+",
+                            desc: "Создать плейлист",
+                            body: {
+                                name: "Вечерний чилл",
+                                description: "Лучшее",
+                                privacy: "public",
+                                isPublic: true,
+                            },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/playlists/{id}",
+                            role: "Владелец / Editor",
+                            desc: "Редактировать плейлист",
+                            params: { id: 1 },
+                            body: {
+                                name: "Обновленный плейлист",
+                                description: "Новое описание",
+                                privacy: "public",
+                            },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/playlists/{id}",
+                            role: "Владелец / Admin",
+                            desc: "Удалить плейлист",
+                            params: { id: 1 },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/playlists/{id}/tracks",
+                            role: "Владелец / Editor",
+                            desc: "Добавить трек в плейлист",
+                            params: { id: 1 },
+                            body: { trackId: 1, position: null },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/playlists/{id}/tracks/{trackId}",
+                            role: "Владелец / Editor",
+                            desc: "Переместить трек на другую позицию",
+                            params: { id: 1, trackId: 1 },
+                            body: { position: 1 },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/playlists/{id}/tracks/{trackId}",
+                            role: "Владелец / Editor",
+                            desc: "Убрать трек из плейлиста",
+                            params: { id: 1, trackId: 1 },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/playlists/{id}/collaborators",
+                            role: "Владелец",
+                            desc: "Добавить соавтора (editor/viewer)",
+                            params: { id: 1 },
+                            body: { userId: 2, role: "editor" },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/playlists/{id}/collaborators/{userId}",
+                            role: "Владелец / Сам соавтор",
+                            desc: "Удалить соавтора",
+                            params: { id: 1, userId: 2 },
+                        },
+                    ],
+                },
+                "cat-discovery": {
+                    title: "🔥 Поиск, Чарты, Рекомендации и Жанры",
+                    items: [
+                        {
+                            method: "GET",
+                            path: "/api/genres",
+                            role: "Все",
+                            desc: "Список всех музыкальных жанров",
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/search",
+                            role: "Все",
+                            desc: "Глобальный поиск (треки, авторы, альбомы, плейлисты)",
+                            query: { query: "user", limit: 10 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/charts",
+                            role: "Все",
+                            desc: "Топ-чарт треков за период (day, week, month, all)",
+                            query: { period: "week", genreId: "", limit: 50 },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/recommendations",
+                            role: "Все",
+                            desc: "Персональные рекомендации",
+                            query: { limit: 20 },
+                        },
+                    ],
+                },
+                "cat-moderation": {
+                    title: "🛡️ Жалобы и Модерация",
+                    items: [
+                        {
+                            method: "POST",
+                            path: "/api/complaints",
+                            role: "User+",
+                            desc: "Отправить жалобу (track, user, comment)",
+                            body: {
+                                targetType: "user",
+                                targetId: 2,
+                                reason: "Спам",
+                                description: "Подозрительная активность",
+                            },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/moderator/complaints",
+                            role: "Mod+",
+                            desc: "Список жалоб для модератора",
+                            query: { status: "pending", page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/moderator/complaints/{id}/resolve",
+                            role: "Mod+",
+                            desc: "Отметить жалобу решённой",
+                            params: { id: 1 },
+                            body: { status: "resolved" },
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/moderator/tracks/pending",
+                            role: "Mod+",
+                            desc: "Треки, ожидающие проверки модератором",
+                            query: { page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/moderator/tracks/{id}/review",
+                            role: "Mod+",
+                            desc: "Одобрить или отклонить трек",
+                            params: { id: 1 },
+                            body: { status: "approved", rejectionReason: null },
+                        },
+                        {
+                            method: "PATCH",
+                            path: "/api/moderator/users/{id}/block",
+                            role: "Mod+",
+                            desc: "Заблокировать / разблокировать пользователя",
+                            params: { id: 2 },
+                            body: { isBlocked: false },
+                        },
+                    ],
+                },
+                "cat-admin": {
+                    title: "⚙️ Администрирование (/api/admin)",
+                    items: [
+                        {
+                            method: "GET",
+                            path: "/api/admin/analytics",
+                            role: "Admin",
+                            desc: "Общая сводка платформы",
+                        },
+                        {
+                            method: "GET",
+                            path: "/api/admin/users",
+                            role: "Admin",
+                            desc: "Все пользователи с фильтрацией",
+                            query: { search: "", page: 1, pageSize: 20 },
+                        },
+                        {
+                            method: "PATCH",
+                            path: "/api/admin/users/{id}/role",
+                            role: "Admin",
+                            desc: "Изменить роль пользователя (user, moderator, admin)",
+                            params: { id: 1 },
+                            body: { role: "admin" },
+                        },
+                        {
+                            method: "PATCH",
+                            path: "/api/admin/users/{id}/block",
+                            role: "Admin",
+                            desc: "Блокировка / разблокировка пользователя",
+                            params: { id: 2 },
+                            body: { isBlocked: false },
+                        },
+                        {
+                            method: "POST",
+                            path: "/api/admin/genres",
+                            role: "Admin",
+                            desc: "Создать новый жанр",
+                            body: { name: "Synthwave" },
+                        },
+                        {
+                            method: "PUT",
+                            path: "/api/admin/genres/{id}",
+                            role: "Admin",
+                            desc: "Переименовать жанр",
+                            params: { id: 1 },
+                            body: { name: "Electronic" },
+                        },
+                        {
+                            method: "DELETE",
+                            path: "/api/admin/genres/{id}",
+                            role: "Admin",
+                            desc: "Удалить жанр",
+                            params: { id: 1 },
+                        },
+                    ],
+                },
+            };
+
+            // Инициализация токена и рендер карточек
+            const savedJwt = localStorage.getItem("dinisify_jwt") || "";
+            document.getElementById("jwtInput").value = savedJwt;
+
+            function saveToken(val) {
+                const clean = val.replace(/^Bearer\s+/i, "").trim();
+                localStorage.setItem("dinisify_jwt", clean);
+                document.getElementById("jwtInput").value = clean;
+            }
+
+            function renderAllEndpoints() {
+                const container = document.getElementById("endpointsContainer");
+                container.innerHTML = "";
+
+                for (const [catId, group] of Object.entries(ENDPOINTS)) {
+                    const sec = document.createElement("section");
+                    sec.id = catId;
+                    sec.className = "tab-pane";
+                    sec.style.display = "none";
+                    sec.innerHTML = `<h1>${group.title}</h1><p>Нажми на любой маршрут, чтобы раскрыть параметры и отправить живой запрос.</p>`;
+
+                    group.items.forEach((ep, idx) => {
+                        const uid = `${catId}-${idx}`;
+                        const card = document.createElement("div");
+                        card.className = "ep-card";
+
+                        let formHtml = "";
+                        if (ep.params) {
+                            formHtml +=
+                                `<div class="form-grid">` +
+                                Object.entries(ep.params)
+                                    .map(
+                                        ([k, v]) => `
+            <div class="field"><label>Path: {${k}}</label><input id="${uid}-param-${k}" value="${v}" /></div>
+          `,
+                                    )
+                                    .join("") +
+                                `</div>`;
+                        }
+                        if (ep.query) {
+                            formHtml +=
+                                `<div class="form-grid">` +
+                                Object.entries(ep.query)
+                                    .map(
+                                        ([k, v]) => `
+            <div class="field"><label>Query: ?${k}=</label><input id="${uid}-query-${k}" value="${v}" /></div>
+          `,
+                                    )
+                                    .join("") +
+                                `</div>`;
+                        }
+                        if (ep.multipart) {
+                            formHtml +=
+                                `<div class="form-grid">` +
+                                ep.multipart
+                                    .map(
+                                        (f) => `
+            <div class="field"><label>Form: ${f.name}</label><input type="${f.type}" id="${uid}-mp-${f.name}" value="${f.value || ""}" /></div>
+          `,
+                                    )
+                                    .join("") +
+                                `</div>`;
+                        }
+                        if (ep.body) {
+                            formHtml += `<div class="field" style="margin-bottom:10px;"><label>JSON Body:</label>
+            <textarea id="${uid}-body" rows="4" style="font-family:monospace;">${JSON.stringify(ep.body, null, 2)}</textarea>
+          </div>`;
+                        }
+
+                        card.innerHTML = `
+          <div class="ep-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="method m-${ep.method}">${ep.method}</span>
+            <span class="ep-path">${ep.path}</span>
+            <span class="ep-desc">${ep.desc}</span>
+            <span class="ep-role">${ep.role}</span>
+          </div>
+          <div class="ep-body">
+            ${formHtml}
+            <button onclick="executeEndpoint('${catId}', ${idx}, '${uid}')">🚀 Отправить запрос</button>
+          </div>
+        `;
+                        sec.appendChild(card);
+                    });
+
+                    container.appendChild(sec);
+                }
+            }
+
+            function showTab(tabId, btn) {
+                document
+                    .querySelectorAll(".tab-pane")
+                    .forEach((el) => (el.style.display = "none"));
+                document
+                    .querySelectorAll(".nav-btn")
+                    .forEach((el) => el.classList.remove("active"));
+                const target = document.getElementById(tabId);
+                if (target) target.style.display = "block";
+                if (btn) btn.classList.add("active");
+            }
+
+            async function executeEndpoint(catId, idx, uid) {
+                const ep = ENDPOINTS[catId].items[idx];
+                const base = document
+                    .getElementById("baseUrl")
+                    .value.replace(/\/+$/, "");
+                let path = ep.path;
+
+                if (ep.params) {
+                    for (const k of Object.keys(ep.params)) {
+                        const val = document.getElementById(
+                            `${uid}-param-${k}`,
+                        ).value;
+                        path = path.replace(`{${k}}`, encodeURIComponent(val));
+                    }
+                }
+
+                if (ep.query) {
+                    const q = new URLSearchParams();
+                    for (const k of Object.keys(ep.query)) {
+                        const val = document.getElementById(
+                            `${uid}-query-${k}`,
+                        ).value;
+                        if (val !== "") q.append(k, val);
+                    }
+                    const qs = q.toString();
+                    if (qs) path += `?${qs}`;
+                }
+
+                const fullUrl = base + path;
+
+                if (ep.isStream) {
+                    const box = document.getElementById("audioPlayerBox");
+                    const player = document.getElementById("audioPlayer");
+                    box.style.display = "block";
+                    player.src = fullUrl;
+                    player.play();
+                    setInspector("200 / 206 STREAM", true, {
+                        streamUrl: fullUrl,
+                        note: "Аудиопоток передан в плеер над этим окном",
+                    });
+                    return;
+                }
+
+                const headers = {};
+                const jwt = document.getElementById("jwtInput").value.trim();
+                if (jwt) headers["Authorization"] = `Bearer ${jwt}`;
+
+                const options = { method: ep.method, headers };
+
+                if (ep.multipart) {
+                    const fd = new FormData();
+                    for (const f of ep.multipart) {
+                        const input = document.getElementById(
+                            `${uid}-mp-${f.name}`,
+                        );
+                        if (f.type === "file") {
+                            if (input.files[0])
+                                fd.append(f.name, input.files[0]);
+                        } else if (input.value !== "") {
+                            fd.append(f.name, input.value);
+                        }
+                    }
+                    options.body = fd;
+                } else if (ep.body) {
+                    headers["Content-Type"] = "application/json";
+                    options.body = document.getElementById(`${uid}-body`).value;
+                }
+
+                await sendRequest(fullUrl, options);
+            }
+
+            async function sendRequest(url, options) {
+                setInspector("Загрузка...", true, "Отправка запроса на " + url);
+                try {
+                    const res = await fetch(url, options);
+                    const text = await res.text();
+                    let data = text;
+                    try {
+                        data = JSON.parse(text);
+                    } catch {}
+
+                    if (data && data.token) {
+                        saveToken(data.token);
+                    }
+                    setInspector(
+                        `${res.status} ${res.statusText}`,
+                        res.ok,
+                        data || "(204 No Content)",
+                    );
+                } catch (err) {
+                    setInspector("Network / CORS Error", false, {
+                        hint: "Не удалось достучаться до API. Проверь, что контейнер запущен и порт в верхнем поле совпадает, либо положи этот файл в папку wwwroot/spec.html проекта.",
+                        details: err.message,
+                    });
+                }
+            }
+
+            function setInspector(statusText, ok, body) {
+                const st = document.getElementById("respStatus");
+                st.textContent = statusText;
+                st.className = "status-pill " + (ok ? "s-ok" : "s-err");
+                document.getElementById("respBody").textContent =
+                    typeof body === "string"
+                        ? body
+                        : JSON.stringify(body, null, 2);
+            }
+
+            async function quickLogin(email, password) {
+                const base = document
+                    .getElementById("baseUrl")
+                    .value.replace(/\/+$/, "");
+                await sendRequest(`${base}/api/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password }),
+                });
+            }
+
+            async function quickGuest() {
+                const base = document
+                    .getElementById("baseUrl")
+                    .value.replace(/\/+$/, "");
+                await sendRequest(`${base}/api/auth/guest`, { method: "POST" });
+            }
+
+            async function checkMe() {
+                const base = document
+                    .getElementById("baseUrl")
+                    .value.replace(/\/+$/, "");
+                const jwt = document.getElementById("jwtInput").value.trim();
+                await sendRequest(`${base}/api/auth/me`, {
+                    method: "GET",
+                    headers: jwt ? { Authorization: `Bearer ${jwt}` } : {},
+                });
+            }
+
+            function downloadMarkdown() {
+                let md = `# Спецификация API Dinisify (v1.0)\n\n`;
+                md += `> Авторы треков и альбомов — сами пользователи (\`owner: { id, nickname, image }\`). Сущность \`Artist\` полностью удалена.\n\n`;
+                for (const group of Object.values(ENDPOINTS)) {
+                    md += `## ${group.title}\n\n| Метод | Маршрут | Кто | Описание |\n|---|---|---|---|\n`;
+                    for (const ep of group.items) {
+                        md += `| \`${ep.method}\` | \`${ep.path}\` | ${ep.role} | ${ep.desc} |\n`;
+                    }
+                    md += `\n`;
+                }
+                const blob = new Blob([md], {
+                    type: "text/markdown;charset=utf-8",
+                });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "API_SPECIFICATION.md";
+                a.click();
+            }
+            if (window.location.origin.startsWith("http")) {
+                document.getElementById("baseUrl").value =
+                    window.location.origin;
+            }
+            renderAllEndpoints();
+        </script>
+    </body>
+</html>

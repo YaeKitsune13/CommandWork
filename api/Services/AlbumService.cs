@@ -7,13 +7,13 @@ namespace api.Services;
 
 public interface IAlbumService
 {
-    Task<AlbumResponseDto> CreateAsync(AlbumCreateDto dto, ulong userId); 
-    
-    Task<AlbumResponseDto> GetAsync(ulong id);
-    Task<IEnumerable<AlbumResponseDto>> GetAllAsync(string? search);
-    Task EditAsync(AlbumEditDto dto);
-    Task DeleteAsync(ulong id);
+    Task<AlbumResponseDto> CreateAsync(AlbumCreateDto dto, ulong userId);
+    Task<AlbumResponseDto> GetAsync(ulong id, ulong? viewerId = null, string? viewerRole = null);
+    Task<PagedResult<AlbumResponseDto>> GetAllAsync(string? search, ulong? ownerId, int page, int pageSize);
+    Task<AlbumResponseDto> EditAsync(ulong id, AlbumEditDto dto, ulong currentUserId, string currentRole);
+    Task DeleteAsync(ulong id, ulong currentUserId, string currentRole);
 }
+
 public class AlbumService : IAlbumService
 {
     private readonly CoopProjectContext _db;
@@ -25,12 +25,10 @@ public class AlbumService : IAlbumService
         _webRoot = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
     }
 
-    private IQueryable<Album> Alive => _db.Albums; 
-
     public async Task<AlbumResponseDto> CreateAsync(AlbumCreateDto dto, ulong userId)
     {
-        if (!await _db.Artists.AnyAsync(a => a.Id == dto.ArtistId))
-            throw new ArgumentException("Артист не найден");
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && u.DeletedAt == null)
+            ?? throw new NotFoundException("Пользователь не найден");
 
         string? imageUrl = null;
         if (dto.Image is { Length: > 0 })
@@ -38,63 +36,92 @@ public class AlbumService : IAlbumService
 
         var album = new Album
         {
-            Name = dto.Name,
-            ArtistId = dto.ArtistId,
+            Name = dto.Name.Trim(),
             Image = imageUrl,
             OwnerId = userId,
-            ReleaseDate = DateOnly.FromDateTime(dto.ReleaseDate)
+            ReleaseDate = dto.ReleaseDate,
+            CreatedAt = DateTime.UtcNow
         };
 
         _db.Albums.Add(album);
         await _db.SaveChangesAsync();
-        return ToDto(album);
+
+        return await GetAsync(album.Id, userId, user.Role);
     }
 
-    public async Task<AlbumResponseDto> GetAsync(ulong id)
+    public async Task<AlbumResponseDto> GetAsync(ulong id, ulong? viewerId = null, string? viewerRole = null)
     {
-        var album = await Alive
-            .Include(a => a.Musics)
+        var album = await _db.Albums
+            .Include(a => a.Owner)
+            .Include(a => a.Musics.Where(m => m.DeletedAt == null))
+                .ThenInclude(m => m.Owner)
+            .Include(a => a.Musics.Where(m => m.DeletedAt == null))
+                .ThenInclude(m => m.Genres)
+            .Include(a => a.Musics.Where(m => m.DeletedAt == null))
+                .ThenInclude(m => m.UserLikes)
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == id)
-            ?? throw new KeyNotFoundException("Альбом не найден!");
-        
-        return ToDto(album);
+            ?? throw new NotFoundException("Альбом не найден");
+
+        var canSeeUnapproved = viewerId == album.OwnerId || viewerRole is "moderator" or "admin";
+        return ToDto(album, withTracks: true, viewerId, canSeeUnapproved);
     }
 
-   public async Task<IEnumerable<AlbumResponseDto>> GetAllAsync(string? search)
-{
-    var query = Alive
-        .Include(a => a.Musics) 
-        .AsNoTracking();
-
-    if (!string.IsNullOrEmpty(search))
-        query = query.Where(a => a.Name.Contains(search));
-
-    var albums = await query.ToListAsync();
-    return albums.Select(ToDto);
-}
-
-    public async Task EditAsync(AlbumEditDto dto)
+    public async Task<PagedResult<AlbumResponseDto>> GetAllAsync(string? search, ulong? ownerId, int page, int pageSize)
     {
-        var album = await Alive.FirstOrDefaultAsync(a => a.Id == dto.Id)
-            ?? throw new KeyNotFoundException("Альбом не найден!");
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
 
-        if (!await _db.Artists.AnyAsync(a => a.Id == dto.ArtistId))
-            throw new ArgumentException("Артист не найден");
+        var query = _db.Albums
+            .Include(a => a.Owner)
+            .Include(a => a.Musics)
+            .AsNoTracking();
 
-        album.Name = dto.Name;
-        album.ArtistId = dto.ArtistId;
-        
-        if (dto.ReleaseDate.HasValue) 
-            album.ReleaseDate = DateOnly.FromDateTime(dto.ReleaseDate.Value);
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim().ToLower();
+            query = query.Where(a => a.Name.ToLower().Contains(s) || a.Owner.Nickname.ToLower().Contains(s));
+        }
 
-        await _db.SaveChangesAsync();
+        if (ownerId.HasValue)
+            query = query.Where(a => a.OwnerId == ownerId.Value);
+
+        var total = await query.CountAsync();
+        var albums = await query
+            .OrderByDescending(a => a.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = albums.Select(a => ToDto(a, withTracks: false)).ToList();
+        return new PagedResult<AlbumResponseDto>(items, page, pageSize, total);
     }
 
-    public async Task DeleteAsync(ulong id)
+    public async Task<AlbumResponseDto> EditAsync(ulong id, AlbumEditDto dto, ulong currentUserId, string currentRole)
     {
         var album = await _db.Albums.FirstOrDefaultAsync(a => a.Id == id)
-            ?? throw new KeyNotFoundException("Альбом не найден!");
+            ?? throw new NotFoundException("Альбом не найден");
+
+        if (album.OwnerId != currentUserId && currentRole != "admin")
+            throw new ForbiddenException("Вы не можете редактировать чужой альбом");
+
+        if (!string.IsNullOrWhiteSpace(dto.Name))
+            album.Name = dto.Name.Trim();
+
+        if (dto.ReleaseDate.HasValue)
+            album.ReleaseDate = dto.ReleaseDate.Value;
+
+        await _db.SaveChangesAsync();
+        return await GetAsync(id, currentUserId, currentRole);
+    }
+
+    public async Task DeleteAsync(ulong id, ulong currentUserId, string currentRole)
+    {
+        var album = await _db.Albums.FirstOrDefaultAsync(a => a.Id == id)
+            ?? throw new NotFoundException("Альбом не найден");
+
+        if (album.OwnerId != currentUserId && currentRole != "admin")
+            throw new ForbiddenException("Вы не можете удалить чужой альбом");
 
         _db.Albums.Remove(album);
         await _db.SaveChangesAsync();
@@ -110,21 +137,24 @@ public class AlbumService : IAlbumService
         return $"/uploads/{folder}/{fileName}";
     }
 
-    private static AlbumResponseDto ToDto(Album a)
+    public static AlbumResponseDto ToDto(Album a, bool withTracks, ulong? viewerId = null, bool canSeeUnapproved = false)
     {
-        DateTime releaseDateTime = a.ReleaseDate?.ToDateTime(TimeOnly.MinValue) ?? DateTime.MinValue;
+        var visibleTracks = (a.Musics ?? Array.Empty<Music>())
+            .Where(m => m.DeletedAt == null && (canSeeUnapproved || m.Status == "approved"))
+            .ToList();
 
         return new AlbumResponseDto(
             a.Id,
             a.Name,
-            a.ArtistId,
+            a.Owner != null
+                ? new UserBriefDto(a.Owner.Id, a.Owner.Nickname, a.Owner.Image)
+                : new UserBriefDto(a.OwnerId, "Unknown", null),
             a.Image,
-            releaseDateTime,
-            a.Musics?.Select(m => new TrackResponseDto {
-                Id = m.Id,
-                Name = m.Name,
-                FileUrl = m.FileUrl
-            }).ToList()
+            a.ReleaseDate,
+            visibleTracks.Count,
+            withTracks
+                ? visibleTracks.Select(m => TrackService.ToDto(m, viewerId, canSeeUnapproved)).ToList()
+                : null
         );
     }
 }

@@ -1,17 +1,11 @@
-using api.Entities;
-using System;
-
 namespace api.Dtos;
 
-public record MusicReviewDto(ulong MusicId, bool IsApproved, string? RejectionReason);
+public record MusicReviewDto(
+    ulong? MusicId,
+    string? Status,
+    bool? IsApproved,
+    string? RejectionReason);
 
-public record UserBlockDto(ulong UserId, bool IsBlocked);
+public record ResolveComplaintDto(string Status = "resolved");
 
-public record MusicModerationResponseDto(
-    ulong Id, 
-    string Name, 
-    string FileUrl, 
-    string ArtistName, 
-    string Status, 
-    DateTime CreatedAt
-);
+public record UserBlockDto(ulong? UserId, bool IsBlocked);

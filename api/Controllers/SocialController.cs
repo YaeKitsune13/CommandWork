@@ -1,30 +1,22 @@
-using System.Security.Claims;
 using api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers;
 
-[ApiController]
 [Route("api/users")]
-public class SocialController : ControllerBase
+[Tags("Social")]
+public class SocialController : ApiControllerBase
 {
     private readonly ISocialService _social;
 
     public SocialController(ISocialService social) => _social = social;
 
-    private ulong CurrentId =>
-        ulong.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
-            ? id
-            : throw new ForbiddenException("Не авторизован");
-
-    // POST api/users/{id}/follow
     [Authorize(Policy = "Registered")]
     [HttpPost("{id}/follow")]
     public async Task<IActionResult> Follow(ulong id) =>
-        Ok(await _social.FollowAsync(id, CurrentId));
+        StatusCode(StatusCodes.Status201Created, await _social.FollowAsync(id, CurrentId));
 
-    // DELETE api/users/{id}/follow
     [Authorize(Policy = "Registered")]
     [HttpDelete("{id}/follow")]
     public async Task<IActionResult> Unfollow(ulong id)
@@ -33,7 +25,6 @@ public class SocialController : ControllerBase
         return NoContent();
     }
 
-    // PUT api/users/{id}/followers/{followerId}
     [Authorize(Policy = "Registered")]
     [HttpPut("{id}/followers/{followerId}")]
     public async Task<IActionResult> AcceptFollow(ulong id, ulong followerId)
@@ -42,15 +33,26 @@ public class SocialController : ControllerBase
         return NoContent();
     }
 
-    // GET api/users/{id}/followers
+    [Authorize(Policy = "Registered")]
+    [HttpDelete("{id}/followers/{followerId}")]
+    public async Task<IActionResult> RejectOrRemoveFollower(ulong id, ulong followerId)
+    {
+        await _social.RejectOrRemoveFollowerAsync(id, followerId, CurrentId);
+        return NoContent();
+    }
+
     [AllowAnonymous]
     [HttpGet("{id}/followers")]
-    public async Task<IActionResult> GetFollowers(ulong id) =>
-        Ok(await _social.GetFollowersAsync(id));
+    public async Task<IActionResult> GetFollowers(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        Ok(await _social.GetFollowersAsync(id, page, pageSize));
 
-    // GET api/users/{id}/following
     [AllowAnonymous]
     [HttpGet("{id}/following")]
-    public async Task<IActionResult> GetFollowing(ulong id) =>
-        Ok(await _social.GetFollowingAsync(id));
+    public async Task<IActionResult> GetFollowing(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        Ok(await _social.GetFollowingAsync(id, page, pageSize));
+
+    [Authorize(Policy = "Registered")]
+    [HttpGet("{id}/follow-requests")]
+    public async Task<IActionResult> GetFollowRequests(ulong id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+        Ok(await _social.GetFollowRequestsAsync(id, CurrentId, page, pageSize));
 }

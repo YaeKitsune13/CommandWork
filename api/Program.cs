@@ -18,7 +18,8 @@ builder.Services.AddCors(options =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .WithExposedHeaders("X-Refreshed-Token");
     });
 });
 
@@ -26,6 +27,7 @@ builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IAlbumService, AlbumService>();
 builder.Services.AddScoped<IComplaintService, ComplaintService>();
 builder.Services.AddScoped<IModeratorService, ModeratorService>();
+builder.Services.AddScoped<IPlaylistService, PlaylistsService>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<CoopProjectContext>(options =>
@@ -36,23 +38,55 @@ builder.Services.AddDbContext<CoopProjectContext>(options =>
 
 var app = builder.Build();
 
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
-        options.DisableAgent();
+        // options.DisableAgent();
     });
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<CoopProjectContext>();
+    SeedData.Run(db);
 }
 else
 {
     app.UseHttpsRedirection();
 }
-app.UseMiddleware<ExceptionMiddleware>(); 
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseRouting();
 app.UseCors("AllowSpecificOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
+app.Use(async (ctx, next) =>
+{
+    if (ctx.User.Identity?.IsAuthenticated == true)
+    {
+        var fresh = JWTSetup.RefreshToken(ctx.User);
+        if (fresh is not null)
+            ctx.Response.OnStarting(() =>
+            {
+                ctx.Response.Headers["X-Refreshed-Token"] = fresh;
+                return Task.CompletedTask;
+            });
+    }
+    await next();
+});
+
+app.MapGet("/info", async (IWebHostEnvironment env) =>
+{
+    var path = Path.Combine(env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot"), "spec.html");
+    if (!File.Exists(path))
+        path = Path.Combine(env.ContentRootPath, "spec.html");
+
+    if (!File.Exists(path))
+        return Results.NotFound("Файл spec.html не найден в контейнере");
+
+    var html = await File.ReadAllTextAsync(path);
+    return Results.Content(html, "text/html; charset=utf-8");
+}).AllowAnonymous();
 
 app.MapControllers();
 

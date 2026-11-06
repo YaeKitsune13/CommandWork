@@ -1,8 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using api.Entities;
-using api.Data;
 using api.Services;
-using api.Controller;
 
 public static class ServiceCollectionExtensions
 {
@@ -11,10 +7,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ITrackService, TrackService>();
-        services.AddScoped<IAlbumService, AlbumService>(); 
+        services.AddScoped<IAlbumService, AlbumService>();
+        services.AddScoped<IPlaylistService, PlaylistsService>();
         services.AddScoped<ISocialService, SocialService>();
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IDiscoveryService, DiscoveryService>();
+        services.AddScoped<ILikeService, LikeService>();
+        services.AddScoped<ICommentService, CommentService>();
+        services.AddScoped<IComplaintService, ComplaintService>();
+        services.AddScoped<IModeratorService, ModeratorService>();
 
         return services;
     }

@@ -10,8 +10,10 @@ public interface ISocialService
     Task<FollowResponseDto> FollowAsync(ulong targetUserId, ulong currentUserId);
     Task UnfollowAsync(ulong targetUserId, ulong currentUserId);
     Task AcceptFollowAsync(ulong targetUserId, ulong followerId, ulong currentUserId);
-    Task<List<FollowUserItemDto>> GetFollowersAsync(ulong userId);
-    Task<List<FollowUserItemDto>> GetFollowingAsync(ulong userId);
+    Task RejectOrRemoveFollowerAsync(ulong targetUserId, ulong followerId, ulong currentUserId);
+    Task<PagedResult<FollowUserItemDto>> GetFollowersAsync(ulong userId, int page = 1, int pageSize = 20);
+    Task<PagedResult<FollowUserItemDto>> GetFollowingAsync(ulong userId, int page = 1, int pageSize = 20);
+    Task<PagedResult<FollowUserItemDto>> GetFollowRequestsAsync(ulong userId, ulong currentUserId, int page = 1, int pageSize = 20);
 }
 
 public class SocialService : ISocialService
@@ -20,7 +22,6 @@ public class SocialService : ISocialService
 
     public SocialService(CoopProjectContext db) => _db = db;
 
-    // POST /users/{id}/follow
     public async Task<FollowResponseDto> FollowAsync(ulong targetUserId, ulong currentUserId)
     {
         if (targetUserId == currentUserId)
@@ -42,7 +43,6 @@ public class SocialService : ISocialService
             throw new ConflictException("Заявка на подписку уже ожидает подтверждения");
         }
 
-        // Если профиль закрыт — заявка в статусе pending, иначе сразу accepted
         var status = targetUser.Privacy == "private" ? "pending" : "accepted";
 
         var follow = new Follow
@@ -59,7 +59,6 @@ public class SocialService : ISocialService
         return new FollowResponseDto(follow.FollowerId, follow.FollowingId, follow.Status, follow.CreatedAt);
     }
 
-    // DELETE /users/{id}/follow
     public async Task UnfollowAsync(ulong targetUserId, ulong currentUserId)
     {
         var follow = await _db.Follows
@@ -70,7 +69,6 @@ public class SocialService : ISocialService
         await _db.SaveChangesAsync();
     }
 
-    // PUT /users/{id}/followers/{followerId}
     public async Task AcceptFollowAsync(ulong targetUserId, ulong followerId, ulong currentUserId)
     {
         if (targetUserId != currentUserId)
@@ -87,29 +85,82 @@ public class SocialService : ISocialService
         await _db.SaveChangesAsync();
     }
 
-    public async Task<List<FollowUserItemDto>> GetFollowersAsync(ulong userId)
+    public async Task RejectOrRemoveFollowerAsync(ulong targetUserId, ulong followerId, ulong currentUserId)
     {
-        return await _db.Follows
-            .Where(f => f.FollowingId == userId && f.Status == "accepted")
-            .Select(f => new FollowUserItemDto(
-                f.Follower.Id,
-                f.Follower.Nickname,
-                f.Follower.Image,
-                f.Status,
-                f.CreatedAt))
-            .ToListAsync();
+        if (targetUserId != currentUserId)
+            throw new ForbiddenException("Управлять подписчиками может только владелец профиля");
+
+        var follow = await _db.Follows
+            .FirstOrDefaultAsync(f => f.FollowerId == followerId && f.FollowingId == targetUserId)
+            ?? throw new NotFoundException("Подписчик или заявка не найдены");
+
+        _db.Follows.Remove(follow);
+        await _db.SaveChangesAsync();
     }
 
-    public async Task<List<FollowUserItemDto>> GetFollowingAsync(ulong userId)
+    public async Task<PagedResult<FollowUserItemDto>> GetFollowersAsync(ulong userId, int page = 1, int pageSize = 20)
     {
-        return await _db.Follows
-            .Where(f => f.FollowerId == userId && f.Status == "accepted")
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = _db.Follows.Where(f => f.FollowingId == userId && f.Status == "accepted");
+        var total = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(f => f.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(f => new FollowUserItemDto(
-                f.Following.Id,
-                f.Following.Nickname,
-                f.Following.Image,
+                new UserBriefDto(f.Follower.Id, f.Follower.Nickname, f.Follower.Image),
                 f.Status,
                 f.CreatedAt))
             .ToListAsync();
+
+        return new PagedResult<FollowUserItemDto>(items, page, pageSize, total);
+    }
+
+    public async Task<PagedResult<FollowUserItemDto>> GetFollowingAsync(ulong userId, int page = 1, int pageSize = 20)
+    {
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = _db.Follows.Where(f => f.FollowerId == userId && f.Status == "accepted");
+        var total = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(f => f.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(f => new FollowUserItemDto(
+                new UserBriefDto(f.Following.Id, f.Following.Nickname, f.Following.Image),
+                f.Status,
+                f.CreatedAt))
+            .ToListAsync();
+
+        return new PagedResult<FollowUserItemDto>(items, page, pageSize, total);
+    }
+
+    public async Task<PagedResult<FollowUserItemDto>> GetFollowRequestsAsync(ulong userId, ulong currentUserId, int page = 1, int pageSize = 20)
+    {
+        if (userId != currentUserId)
+            throw new ForbiddenException("Заявки в подписчики видит только владелец профиля");
+
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var query = _db.Follows.Where(f => f.FollowingId == userId && f.Status == "pending");
+        var total = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(f => f.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(f => new FollowUserItemDto(
+                new UserBriefDto(f.Follower.Id, f.Follower.Nickname, f.Follower.Image),
+                f.Status,
+                f.CreatedAt))
+            .ToListAsync();
+
+        return new PagedResult<FollowUserItemDto>(items, page, pageSize, total);
     }
 }

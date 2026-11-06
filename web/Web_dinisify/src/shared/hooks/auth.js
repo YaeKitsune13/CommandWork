@@ -1,74 +1,89 @@
-import { useState, useCallback } from 'react';
-import { authApi } from '../api/authApi';
+// src/hooks/useAuth.js
+import { useState, useEffect, useCallback } from 'react';
 
-function parseJwt(token) {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-}
-
-function getRoleFromToken(token) {
-  const payload = parseJwt(token);
-  if (!payload) return 'user';
-  
-  const roleClaim = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-  return roleClaim || payload.role || 'user';
-}
-function getIdFromToken(token) {
-  const payload = parseJwt(token);
-  if (!payload) return null;
-  return payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] 
-      || payload.nameid 
-      || payload.sub 
-      || null;
-}
+const API_URL = 'http://127.0.0.1:5000/api';
+const TOKEN_KEY = 'token';
+const ROLE_KEY = 'role';
 
 export function useAuth() {
-  const [token, setToken] = useState(() => localStorage.getItem('token'));
-  const [role, setRole] = useState(() => {
-    const savedToken = localStorage.getItem('token');
-    return savedToken ? getRoleFromToken(savedToken) : 'guest';
-  });
-  const [userId, setUserId] = useState(() => {
-    const savedToken = localStorage.getItem('token');
-    return savedToken ? getIdFromToken(savedToken) : null;
-  });
-
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
+  const [role, setRole] = useState(
+    () => localStorage.getItem(ROLE_KEY) || (localStorage.getItem(TOKEN_KEY) ? 'user' : 'guest')
+  );
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const persist = useCallback((newToken) => {
-    const actualRole = getRoleFromToken(newToken);
-    const actualId = getIdFromToken(newToken);
-    
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('role', actualRole);
-    
-    setToken(newToken);
-    setRole(actualRole);
-    setUserId(actualId);
+  const fetchMe = useCallback(async (tk) => {
+    const t = tk || token;
+    if (!t) return null;
+    try {
+      const res = await fetch(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      setUser(data);
+      const r = data.role || 'user';
+      setRole(r);
+      localStorage.setItem(ROLE_KEY, r);
+      return data;
+    } catch {
+      return null;
+    }
+  }, [token]);
+  useEffect(() => {
+    if (token) fetchMe(token);
   }, []);
+
   const login = async (email, password) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await authApi.login(email, password);
-      const newToken = data?.token ?? data?.access_token ?? data;
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) throw new Error('Неверный email или пароль');
+
+      const text = await response.text();
+      let newToken = text;
+      try {
+        const j = JSON.parse(text);
+        newToken = j.token || j.access_token || text;
+      } catch { /* raw string token */ }
       if (!newToken) throw new Error('Токен не получен от сервера');
-      
-      persist(newToken); 
-      
-      return { success: true };
+
+      localStorage.setItem(TOKEN_KEY, newToken);
+      setToken(newToken);
+
+      const me = await fetchMe(newToken);
+      const newRole = me?.role || 'user';
+      setRole(newRole);
+      localStorage.setItem(ROLE_KEY, newRole);
+
+      return { success: true, role: newRole };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (email, password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.status === 409) throw new Error('Email занят');
+      if (!res.ok) throw new Error('Не удалось зарегистрироваться');
+      return await login(email, password);
     } catch (err) {
       setError(err.message);
       return { success: false, error: err.message };
@@ -96,21 +111,23 @@ export function useAuth() {
     }
   };
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ROLE_KEY);
     setToken(null);
     setRole('guest');
-    setUserId(null);
+    setUser(null);
   };
-
   return {
     token,
     role,
-    userId,
-    isGuest: role === 'guest',
-    isAuthenticated: !!token,
+    user,
+    isGuest: role === 'guest' || !token,
+    isModerator: role === 'moderator' || role === 'admin',
+    isAdmin: role === 'admin',
     login,
+    register,
     logout,
+    fetchMe,
     loading,
     error,
   };
