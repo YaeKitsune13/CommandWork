@@ -1,6 +1,6 @@
 <mxfile host="Electron">
   <diagram name="Модульная схема API" id="QfMYHrICOmOKaAj5ONzg">
-    <mxGraphModel dx="1384" dy="2017" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="673" dy="2017" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -188,10 +188,10 @@
         <mxCell id="qjNbz6L8_2EaYXjYYS85-454" edge="1" parent="1" source="qjNbz6L8_2EaYXjYYS85-243" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="qjNbz6L8_2EaYXjYYS85-452">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1010" y="-250" />
-              <mxPoint x="1740" y="-250" />
-              <mxPoint x="1740" y="555" />
-              <mxPoint x="1195" y="555" />
+              <mxPoint x="1010" y="-170" />
+              <mxPoint x="1230" y="-170" />
+              <mxPoint x="1230" y="490" />
+              <mxPoint x="1195" y="490" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -634,10 +634,15 @@
           <mxGeometry height="30" width="150" x="1120" y="540" as="geometry" />
         </mxCell>
         <mxCell id="_DhB2XI9ISUw2cFwRA7C-2" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;rotation=90;verticalAlign=middle;horizontal=0;" value="MySql бд" vertex="1">
-          <mxGeometry height="155" width="50" x="1042.5" y="-502.5" as="geometry" />
+          <mxGeometry height="155" width="50" x="987.5" y="-422.5" as="geometry" />
         </mxCell>
         <mxCell id="_DhB2XI9ISUw2cFwRA7C-3" edge="1" parent="1" source="_DhB2XI9ISUw2cFwRA7C-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.21;entryY=0.01;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;endFill=0;" target="qjNbz6L8_2EaYXjYYS85-243">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1010" y="-320" />
+              <mxPoint x="1010" y="-229.7" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
