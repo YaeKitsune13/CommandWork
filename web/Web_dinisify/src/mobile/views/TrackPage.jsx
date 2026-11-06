@@ -60,7 +60,7 @@ export default function TrackPage() {
 
           {track.albumId && (
             <Link to={`/albums/${track.albumId}`} className="track-page__album-link">
-              Перейти к альбому →
+              Перейти к альбому
             </Link>
           )}
 
@@ -80,7 +80,7 @@ export default function TrackPage() {
       </header>
 
       <button className="track-page__play" onClick={handlePlay}>
-        {isCurrent && isPlaying ? '⏸ Пауза' : '▶ Слушать'}
+        {isCurrent && isPlaying ? '|| Пауза' : '> Слушать'}
       </button>
 
       <dl className="track-page__details">

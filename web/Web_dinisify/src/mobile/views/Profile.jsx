@@ -56,7 +56,7 @@ export default function Profile() {
 
   return (
     <div className="profile">
-      <button onClick={goBack} className="profile__back">← Назад</button>
+      <button onClick={goBack} className="profile__back">Назад</button>
 
       <header className="profile__header">
         <div className="profile__avatar">
