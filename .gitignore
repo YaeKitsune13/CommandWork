@@ -48,3 +48,4 @@ TestResults/
 ## Настройки пользователя ОС
 .DS_Store
 Thumbs.db
+.*.bkp
