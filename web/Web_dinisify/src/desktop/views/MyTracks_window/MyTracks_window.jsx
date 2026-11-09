@@ -13,13 +13,11 @@ function MyTracks_window({ auth }) {
   const [msgOk, setMsgOk] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const [artistId, setArtistId] = useState(null);
-
   const isGuest = auth?.isGuest || auth?.role === "guest" || !auth?.user?.id;
 
-  // 1. Пытаемся определить artistId текущего пользователя
-  useEffect(() => {
-    if (isGuest) {
+  const loadTracks = async () => {
+    if (!auth?.user?.id) {
+      setTracks([]);
       setLoading(false);
       return;
     }
@@ -64,19 +62,21 @@ function MyTracks_window({ auth }) {
   const loadTracks = async (artId) => {
     setLoading(true);
     try {
-      const result = await api.get(`/music/artist/${artId}`, { auth: false });
-      const items = Array.isArray(result) ? result : (result?.items ?? []);
-      // Сортируем по убыванию ID (сначала новые)
+      const result = await api.get(`/users/${auth.user.id}/tracks`);
+      const items = result?.items || (Array.isArray(result) ? result : []);
       setTracks(items.sort((a, b) => b.id - a.id));
     } catch (err) {
-      console.error("Ошибка загрузки треков:", err);
+      console.error(err);
       setTracks([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // 3. Загрузка трека
+  useEffect(() => {
+    loadTracks();
+  }, [auth?.user?.id]);
+
   const handleUpload = async (e) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -84,17 +84,28 @@ function MyTracks_window({ auth }) {
 
     // Чистим пустые файлы
     for (const [key, val] of [...fd.entries()]) {
-      if (val instanceof File && val.size === 0) fd.delete(key);
+      if (val instanceof File && val.size === 0) {
+        fd.delete(key);
+      }
     }
 
     if (!fd.get("Name")?.toString().trim())
       return setMsg("Укажите название трека");
-    if (!fd.get("AudioFile")?.size) return setMsg("Выберите аудиофайл");
+
+    const audioFile = fd.get("AudioFile");
+    if (!audioFile?.size) return setMsg("Выберите аудиофайл");
+
+    if (audioFile.name.toLowerCase().endsWith(".m4a")) {
+      setMsg(
+        "Формат .m4a пока не поддерживается сервером. Пожалуйста, загрузите .mp3 или .wav",
+      );
+      return;
+    }
 
     setMsg("");
     setUploading(true);
     try {
-      await api.post("/music", fd);
+      await api.post("/tracks", fd);
       setMsg("✓ Трек отправлен на модерацию");
       setMsgOk(true);
       setIsModalOpen(false);
@@ -103,7 +114,10 @@ function MyTracks_window({ auth }) {
       // Обновляем список, если знаем artistId
       if (artistId) loadTracks(artistId);
     } catch (err) {
-      setMsg(err.message || "Не удалось загрузить трек");
+      const errorMsg = err.fields
+        ? Object.values(err.fields).flat().join(", ")
+        : err.message;
+      setMsg(errorMsg || "Не удалось загрузить трек");
       setMsgOk(false);
     } finally {
       setUploading(false);
@@ -142,7 +156,7 @@ function MyTracks_window({ auth }) {
         </div>
       )}
 
-      {loading && <p className="my-tracks__hint">Загрузка...</p>}
+      {loading && <p>Загрузка...</p>}
 
       {!loading && !isGuest && tracks.length === 0 && (
         <div className="my-tracks__empty">
@@ -170,11 +184,9 @@ function MyTracks_window({ auth }) {
                   />
                 </div>
                 <div className="track-card__body">
-                  <div className="track-card__title" title={track.name}>
-                    {track.name}
-                  </div>
+                  <div className="track-card__title">{track.name}</div>
                   <div className="track-card__author">
-                    {track.artistName || "Вы"}
+                    {track.owner?.nickname || "Вы"}
                   </div>
                   <div
                     className={`track-card__status track-card__status--${s.cls}`}
@@ -201,24 +213,16 @@ function MyTracks_window({ auth }) {
             <form className="modal-form" onSubmit={handleUpload}>
               <div className="form-field">
                 <label>Название трека *</label>
-                <input
-                  name="Name"
-                  type="text"
-                  placeholder="Например: Midnight Rain"
-                  required
-                />
+                <input name="Name" type="text" required />
               </div>
-
               <div className="file-input">
-                <label>Аудиофайл (mp3 / wav / m4a) *</label>
+                <label>Аудиофайл *</label>
                 <input name="AudioFile" type="file" accept="audio/*" required />
               </div>
-
               <div className="file-input">
                 <label>Обложка (опционально)</label>
                 <input name="Image" type="file" accept="image/*" />
               </div>
-
               <button
                 type="submit"
                 className="btn-primary"
@@ -233,5 +237,4 @@ function MyTracks_window({ auth }) {
     </div>
   );
 }
-
 export default MyTracks_window;

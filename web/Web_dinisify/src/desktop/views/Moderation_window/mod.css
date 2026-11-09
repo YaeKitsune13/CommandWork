@@ -48,6 +48,7 @@
   border-radius: 10px;
 }
 
+
 .admin-item__cover {
   width: 64px; height: 64px; border-radius: 8px; overflow: hidden;
   background: #111;
@@ -66,7 +67,7 @@
 .admin-item__meta--small { font-size: 11px; color: #666; }
 .admin-item__text { font-size: 14px; color: #ddd; margin-top: 4px; }
 
-.admin-item__audio audio { width: 100%; height: 32px; }
+.admin-item__audio audio { width: 900px; height: 32px; }
 .admin-item__actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .admin-btn {
