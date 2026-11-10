@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Upload, X, Music, Clock, CheckCircle, XCircle } from "lucide-react";
 import { api } from "shared/hooks/client.js";
 import { imageUrl, onImgError } from "shared/fallbackImage.js";
@@ -13,56 +13,20 @@ function MyTracks_window({ auth }) {
   const [msgOk, setMsgOk] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const isGuest = auth?.isGuest || auth?.role === "guest" || !auth?.user?.id;
+  // Выносим переменные, чтобы Vite (oxc) не падал на optional chaining в массиве зависимостей
+  const userId = auth?.user?.id;
+  const isGuest = auth?.isGuest || auth?.role === "guest" || !userId;
 
-  const loadTracks = async () => {
-    if (!auth?.user?.id) {
+  // 1. Загрузка треков текущего пользователя
+  const loadTracks = useCallback(async () => {
+    if (!userId) {
       setTracks([]);
       setLoading(false);
       return;
     }
-
-    const resolveArtist = async () => {
-      // Проверяем, вдруг бэкенд уже добавил artistId в /auth/me
-      if (auth?.user?.artistId) {
-        setArtistId(auth.user.artistId);
-        return auth.user.artistId;
-      }
-
-      // Если нет, ищем по имени через поиск (как делали раньше)
-      try {
-        const name = auth?.user?.name;
-        if (name) {
-          const res = await api.get(
-            `/search?query=${encodeURIComponent(name)}`,
-            { auth: false },
-          );
-          const artists = res?.artists ?? [];
-          const found = artists.find(
-            (a) => a.name?.toLowerCase() === name.toLowerCase(),
-          );
-          if (found) {
-            setArtistId(found.id);
-            return found.id;
-          }
-        }
-      } catch (err) {
-        console.error("Не удалось найти артиста", err);
-      }
-      return null;
-    };
-
-    resolveArtist().then((id) => {
-      if (id) loadTracks(id);
-      else setLoading(false);
-    });
-  }, [auth?.user?.id, auth?.user?.name, isGuest]);
-
-  // 2. Загружаем треки по новому эндпоинту
-  const loadTracks = async (artId) => {
     setLoading(true);
     try {
-      const result = await api.get(`/users/${auth.user.id}/tracks`);
+      const result = await api.get(`/users/${userId}/tracks`);
       const items = result?.items || (Array.isArray(result) ? result : []);
       setTracks(items.sort((a, b) => b.id - a.id));
     } catch (err) {
@@ -71,11 +35,12 @@ function MyTracks_window({ auth }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
+  // 2. Запускаем загрузку при монтировании или смене юзера
   useEffect(() => {
     loadTracks();
-  }, [auth?.user?.id]);
+  }, [loadTracks]);
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -97,7 +62,7 @@ function MyTracks_window({ auth }) {
 
     if (audioFile.name.toLowerCase().endsWith(".m4a")) {
       setMsg(
-        "Формат .m4a пока не поддерживается сервером. Пожалуйста, загрузите .mp3 или .wav",
+        "Формат .m4a пока не поддерживается сервером. Загрузите .mp3 или .wav",
       );
       return;
     }
@@ -110,9 +75,7 @@ function MyTracks_window({ auth }) {
       setMsgOk(true);
       setIsModalOpen(false);
       form.reset();
-
-      // Обновляем список, если знаем artistId
-      if (artistId) loadTracks(artistId);
+      await loadTracks();
     } catch (err) {
       const errorMsg = err.fields
         ? Object.values(err.fields).flat().join(", ")
@@ -237,4 +200,5 @@ function MyTracks_window({ auth }) {
     </div>
   );
 }
+
 export default MyTracks_window;

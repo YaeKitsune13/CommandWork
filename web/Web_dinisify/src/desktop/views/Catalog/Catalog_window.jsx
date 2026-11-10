@@ -14,21 +14,37 @@ function Catalog_window({ onPlayTrack }) {
     setLoading(true);
     setError("");
     try {
-      // Теперь используем единый каталог /tracks
-      const endpoint = query
-        ? `/search?query=${encodeURIComponent(query)}`
-        : `/tracks?page=1&pageSize=20`;
-
-      const result = await api.get(endpoint, { auth: false });
-
-      // Если это поиск, он может возвращать { tracks: [...] }, а если каталог, то { items: [...] }
-      const items =
-        result?.items ||
-        result?.tracks ||
-        (Array.isArray(result) ? result : []);
-      setTracks(items);
+      if (query) {
+        const result = await api.get(
+          `/search?query=${encodeURIComponent(query)}`,
+          { auth: false },
+        );
+        const items = result?.tracks || result?.items || [];
+        setTracks(items);
+      } else {
+        // Пытаемся загрузить каталог. Если /tracks 404 (бэкенд не готов) — падаем в /charts
+        try {
+          const result = await api.get(`/tracks?page=1&pageSize=20`, {
+            auth: false,
+          });
+          setTracks(result?.items || []);
+        } catch (err) {
+          if (err.status === 404) {
+            console.warn(
+              "GET /tracks не найден, используем /charts как запасной вариант",
+            );
+            const fallback = await api.get(`/charts?limit=20`, { auth: false });
+            const items = Array.isArray(fallback)
+              ? fallback
+              : fallback?.items || [];
+            setTracks(items.map((i) => i.track || i)); // Чарты иногда оборачивают трек в объект
+          } else {
+            throw err;
+          }
+        }
+      }
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Не удалось загрузить каталог");
     } finally {
       setLoading(false);
     }
@@ -38,7 +54,6 @@ function Catalog_window({ onPlayTrack }) {
     loadTracks("");
   }, []);
 
-  // Дедупликация авторов для верхней панели
   const authors = Array.from(
     new Map(
       tracks.map((t) => [
@@ -51,7 +66,7 @@ function Catalog_window({ onPlayTrack }) {
         },
       ]),
     ).values(),
-  ).filter((a) => a.id); // убираем пустых
+  ).filter((a) => a.id);
 
   tracks.forEach((t) => {
     const a = authors.find((x) => x.id === t.owner?.id);
