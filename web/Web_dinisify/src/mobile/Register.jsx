@@ -38,7 +38,8 @@ export default function Register() {
       <input
         value={nickname}
         onChange={(e) => setNickname(e.target.value)}
-        placeholder="Никнейм (необязательно)"
+        placeholder="Никнейм"
+        required
       />
       <button type="submit" disabled={loading}>
         {loading ? 'Регистрация...' : 'Зарегистрироваться'}
