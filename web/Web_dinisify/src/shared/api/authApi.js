@@ -2,7 +2,7 @@ import { request } from './client';
 
 export const authApi = {
   register: (email, password, nickname = null) =>
-    request('/api/auth/register', {
+    request('/auth/register', {
       method: 'POST',
       body: { email, password, nickname },
       auth: false,
