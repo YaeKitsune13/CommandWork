@@ -6,7 +6,8 @@ export function useUploadTrack() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const upload = async ({ audioFile, name, artistId, ownerId, albumId, image }) => {
+  // Убрали artistId и ownerId
+  const upload = async ({ audioFile, name, albumId, image }) => {
     setLoading(true);
     setError(null);
     setProgress(0);
@@ -15,8 +16,8 @@ export function useUploadTrack() {
       const fd = new FormData();
       fd.append('AudioFile', audioFile);
       fd.append('Name', name);
-      fd.append('ArtistId', String(artistId));
-      fd.append('OwnerId', String(ownerId));
+      
+      // Передаем только то, что есть в спецификации
       if (albumId) fd.append('AlbumId', String(albumId));
       if (image) fd.append('Image', image);
 

@@ -22,15 +22,7 @@ export default function UploadTrack() {
       return;
     }
 
-    const res = await upload({
-      audioFile,
-      name,
-      artistId: Number(artistId),
-      ownerId: Number(ownerId),
-      albumId: albumId ? Number(albumId) : null,
-      image,
-    });
-
+    const res = await upload({ audioFile, name, albumId, image });
     if (res.success) {
       alert('Трек отправлен на модерацию');
       navigate(`/tracks/${res.track.id}`);
@@ -72,26 +64,6 @@ export default function UploadTrack() {
       </label>
 
       <div className="upload__row">
-        <label className="upload__field">
-          <span>ArtistId *</span>
-          <input
-            type="number"
-            value={artistId}
-            onChange={(e) => setArtistId(e.target.value)}
-            required
-          />
-        </label>
-
-        <label className="upload__field">
-          <span>OwnerId *</span>
-          <input
-            type="number"
-            value={ownerId}
-            onChange={(e) => setOwnerId(e.target.value)}
-            required
-          />
-        </label>
-
         <label className="upload__field">
           <span>AlbumId (опционально)</span>
           <input

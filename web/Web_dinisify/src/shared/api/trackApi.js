@@ -1,7 +1,8 @@
 import { request, API_URL } from './client';
 
 export const trackApi = {
-  meta: (id) => request(`/api/music/meta?id=${id}`),
+  // В спецификации (v1) старый роут /api/music/meta заменен на /api/tracks/{id}
+  meta: (id) => request(`/tracks/${id}`),
 
   /**
    * Загрузка трека с прогрессом.
@@ -12,7 +13,10 @@ export const trackApi = {
   upload: (formData, onProgress) =>
     new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `/api/music`);
+      
+      // ИСПОЛЬЗУЕМ API_URL и правильный путь /tracks
+      // Если API_URL = '/api', итоговый путь будет '/api/tracks'
+      xhr.open('POST', `${API_URL}/tracks`);
 
       const token = localStorage.getItem('token');
       if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
@@ -25,14 +29,15 @@ export const trackApi = {
 
       xhr.onload = () => {
         let data = null;
-        try { data = JSON.parse(xhr.responseText); } catch { /* фывпку */ }
+        try { data = JSON.parse(xhr.responseText); } catch { /* ignore */ }
 
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve(data?.music ?? data);
         } else {
-          let message = data?.message || data?.title || `Ошибка ${xhr.status}`;
-          if (data?.errors) {
-            const first = Object.values(data.errors).flat()[0];
+          // Обработка ошибок в стиле ASP.NET Core
+          let message = data?.error || data?.title || `Ошибка ${xhr.status}`;
+          if (data?.fields) {
+            const first = Object.values(data.fields).flat()[0];
             if (first) message = first;
           }
           reject(new Error(message));

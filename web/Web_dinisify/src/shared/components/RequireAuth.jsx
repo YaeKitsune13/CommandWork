@@ -1,6 +1,6 @@
+//src/shared/components/RequireAuth.jsx
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/auth';
-
+import { useAuth } from '../hooks/useAuth';
 export default function RequireAuth({ children }) {
   const { isAuthenticated } = useAuth();
   const location = useLocation();

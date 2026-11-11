@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../shared/hooks/auth';
+import { useAuth } from '../shared/hooks/useAuth';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -13,7 +13,7 @@ export default function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await login(email, password);
-    if (result.success) navigate(from, { replace: true });
+    if (result.success) navigate(from, {replace: true});
   };
 
   const handleGuest = async () => {
