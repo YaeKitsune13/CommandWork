@@ -1,11 +1,12 @@
-// src/api/client.js
 const API_URL = 'http://127.0.0.1:5000/api';
 
 export class ApiError extends Error {
-  constructor(message, code, status) {
+  constructor(message, code, status, fields) {
     super(message);
+    this.name = 'ApiError';
     this.code = code;
     this.status = status;
+    this.fields = fields || {};
   }
 }
 
@@ -15,6 +16,7 @@ export async function apiFetch(path, { method = 'GET', body, auth = true } = {})
     const t = localStorage.getItem('token');
     if (t) headers.Authorization = `Bearer ${t}`;
   }
+  
   let payload = body;
   if (body && !(body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
@@ -22,16 +24,42 @@ export async function apiFetch(path, { method = 'GET', body, auth = true } = {})
   }
 
   const res = await fetch(`${API_URL}${path}`, { method, headers, body: payload });
+  
+  if (res.status === 401) {
+    if (auth) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      window.dispatchEvent(new CustomEvent('auth:expired'));
+      throw new ApiError('Сессия истекла — войдите снова', 'unauthorized', 401);
+    } else {
+      throw new ApiError('Неверный email или пароль', 'unauthorized', 401);
+    }
+  }
+
   const text = await res.text();
   let json = null;
-  try { json = text ? JSON.parse(text) : null; } catch {}
-
-  if (!res.ok) throw new ApiError(json?.message || res.statusText, json?.code, res.status);
-
-  if (json && typeof json === 'object' && 'code' in json) {
-    if (json.code !== 'OK') throw new ApiError(json.message || 'API error', json.code, res.status);
-    return json.result;
+  
+  // Безопасный парсинг (защита от пустого тела)
+  if (text && text.trim().length > 0) {
+    try { json = JSON.parse(text); } catch { }
   }
+
+  if (!res.ok) {
+    let errMsg = json?.error || json?.message || json?.title || res.statusText;
+    let errCode = json?.code || 'error';
+    let fields = json?.fields;
+
+    if (json?.errors) {
+      fields = json.errors;
+      const firstField = Object.keys(json.errors)[0];
+      if (firstField && json.errors[firstField].length > 0) {
+        errMsg = json.errors[firstField][0];
+      }
+    }
+
+    throw new ApiError(errMsg, errCode, res.status, fields);
+  }
+
   return json;
 }
 

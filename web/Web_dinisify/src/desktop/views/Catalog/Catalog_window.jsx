@@ -4,48 +4,30 @@ import { api } from "shared/hooks/client.js";
 import { imageUrl, onImgError } from "shared/fallbackImage.js";
 import "./Catalog_window.css";
 
-// Defensive extractor: controllers may return a bare array or an envelope
-// like { items | data | tracks | music: [...] }. Handle all.
-function extractList(result) {
-  if (!result) return [];
-  if (Array.isArray(result)) return result;
-  for (const k of ["items", "data", "tracks", "music", "results"]) {
-    if (Array.isArray(result[k])) return result[k];
-  }
-  return [];
-}
-
-// Charts may wrap each item as { track: {...}, playCount: N } or return
-// plain track objects. Normalize both to a flat track shape.
-function toTrack(item) {
-  const src = item?.track ?? item ?? {};
-  return {
-    id: src.id ?? src.track_id ?? src.music_id,
-    name: src.name ?? src.title,
-    author: src.author ?? src.artist,
-    genre: src.genre,
-    image: src.image ?? src.cover,
-  };
-}
-
 function Catalog_window({ onPlayTrack }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadDefault = async () => {
+  const loadTracks = async (query = "") => {
     setLoading(true);
     setError("");
     try {
-      // /charts accepts empty params and is AllowAnonymous.
-      const result = await api.get("/charts?period=week&limit=50", {
-        auth: false,
-      });
-      const items = extractList(result)
-        .map(toTrack)
-        .filter((t) => t.id);
-      setTracks(items);
+      if (query) {
+        const result = await api.get(
+          `/search?query=${encodeURIComponent(query)}`,
+          { auth: false },
+        );
+        const items = result?.tracks || result?.items || [];
+        setTracks(items);
+      } else {
+        // Загружаем каталог согласно спецификации
+        const result = await api.get(`/tracks?page=1&pageSize=20`, {
+          auth: false,
+        });
+        setTracks(result?.items || []);
+      }
     } catch (err) {
       setError(err.message || "Не удалось загрузить каталог");
     } finally {
@@ -53,43 +35,27 @@ function Catalog_window({ onPlayTrack }) {
     }
   };
 
-  const runSearch = async (query) => {
-    const q = query.trim();
-    if (!q) {
-      // Empty query → don't hit /search (it 400s). Fall back to the default list.
-      return loadDefault();
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const result = await api.get(`/search?query=${encodeURIComponent(q)}`, {
-        auth: false,
-      });
-      const items = extractList(result)
-        .map(toTrack)
-        .filter((t) => t.id);
-      setTracks(items);
-    } catch (err) {
-      setError(err.message || "Ошибка поиска");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadDefault();
+    loadTracks("");
   }, []);
 
+  // Дедупликация авторов (теперь они в owner)
   const authors = Array.from(
     new Map(
       tracks.map((t) => [
-        t.author,
-        { name: t.author, count: 0, photo: t.image },
+        t.owner?.id,
+        {
+          id: t.owner?.id,
+          name: t.owner?.nickname,
+          photo: t.owner?.image,
+          count: 0,
+        },
       ]),
     ).values(),
-  );
+  ).filter((a) => a.id);
+
   tracks.forEach((t) => {
-    const a = authors.find((x) => x.name === t.author);
+    const a = authors.find((x) => x.id === t.owner?.id);
     if (a) a.count += 1;
   });
 
@@ -116,25 +82,27 @@ function Catalog_window({ onPlayTrack }) {
 
       <hr className="catalog__divider" />
 
-      {loading && <p>Загрузка...</p>}
-      {error && <p style={{ color: "salmon" }}>{error}</p>}
+      {loading && <p style={{ padding: 16 }}>Загрузка...</p>}
+      {error && <p style={{ padding: 16, color: "salmon" }}>{error}</p>}
 
       {!loading && !error && (
         <>
           <section className="catalog__section">
             <div className="catalog__authors">
-              {authors.map((a) => (
-                <button key={a.name} className="author-card" type="button">
+              {authors.map((author) => (
+                <button key={author.id} className="author-card" type="button">
                   <div className="author-card__image-wrapper">
                     <img
-                      src={imageUrl(a.photo)}
+                      src={imageUrl(author.photo)}
                       onError={onImgError}
-                      alt={a.name}
+                      alt={author.name}
                       className="author-card__image"
                     />
                   </div>
-                  <span className="author-card__name">{a.name || "—"}</span>
-                  <span className="author-card__count">{a.count} Песен</span>
+                  <span className="author-card__name">{author.name}</span>
+                  <span className="author-card__count">
+                    {author.count} Песен
+                  </span>
                 </button>
               ))}
             </div>
@@ -144,28 +112,36 @@ function Catalog_window({ onPlayTrack }) {
 
           <section className="catalog__section">
             <ul className="catalog__tracks">
-              {tracks.map((t) => (
-                <li key={t.id} className="track-row">
+              {tracks.map((track) => (
+                <li key={track.id} className="track-row">
                   <button
                     className="track-row__play"
-                    onClick={() => onPlayTrack?.(t)}
+                    onClick={() => onPlayTrack?.(track)}
                     aria-label="Play"
                   >
                     <Play size={18} />
                   </button>
                   <div className="track-row__cover">
                     <img
-                      src={imageUrl(t.image)}
+                      src={imageUrl(track.image)}
                       onError={onImgError}
-                      alt={t.name}
+                      alt={track.name}
                     />
                   </div>
                   <div className="track-row__info">
-                    <span className="track-row__title">{t.name}</span>
-                    <span className="track-row__artist">{t.author}</span>
+                    <span className="track-row__title">{track.name}</span>
+                    <span className="track-row__artist">
+                      {track.owner?.nickname || "—"}
+                    </span>
                   </div>
-                  <span className="track-row__genre">{t.genre}</span>
-                  <span className="track-row__duration">—</span>
+                  <span className="track-row__genre">
+                    {track.genres?.map((g) => g.name).join(", ") || "—"}
+                  </span>
+                  <span className="track-row__duration">
+                    {track.durationSec
+                      ? `${Math.floor(track.durationSec / 60)}:${(track.durationSec % 60).toString().padStart(2, "0")}`
+                      : "—"}
+                  </span>
                   <button className="track-row__action" aria-label="Like">
                     <Heart size={16} />
                   </button>

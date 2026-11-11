@@ -1,4 +1,4 @@
-// src/hooks/useAuth.js
+// src/hooks/auth.js
 import { useState, useEffect, useCallback } from 'react';
 
 const API_URL = 'http://127.0.0.1:5000/api';
