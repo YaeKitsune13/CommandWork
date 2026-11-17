@@ -14,8 +14,7 @@ import { useAuth } from "../shared/hooks/auth.js";
 import Admin_window from "./views/Admin/Admin_window";
 import Moderation_window from "./views/Moderation_window/Moderation_window";
 import "./App.css";
-
-function App() {
+  function App() {
   const auth = useAuth();
   const [currentView, setCurrentView] = useState("catalog");
   const [currentTrack, setCurrentTrack] = useState(null);

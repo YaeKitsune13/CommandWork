@@ -261,40 +261,10 @@ function Settings_window({ auth }) {
         </button>
       </form>
 
-      {/* Post-save hint about artist seeding */}
-      {profileOk && artistExists === false && (
-        <div className="settings__card settings__card--warning">
-          <h3
-            style={{
-              margin: "0 0 8px",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <AlertTriangle size={16} /> Профиль сохранён, но загрузка пока не
-            работает
-          </h3>
-          <p style={{ margin: "0 0 8px", color: "#ccc" }}>
-            В базе ещё нет записи артиста с именем <b>«{nickname}»</b>.
-            Попросите бэкенд-разработчика добавить запись, или выполните команду
-            ниже (это одноразово, в консоли на сервере):
-          </p>
-          <pre className="settings__code">
-            {`sudo docker exec -it mysql_coop_project \\
-  mysql -uroot -p1234 -D coop_project \\
-  -e "INSERT INTO \\\`artist\\\` (name) VALUES ('${nickname}');"`}
-          </pre>
-          <p style={{ margin: 0, color: "#888", fontSize: 12 }}>
-            После этого перезайдите в аккаунт — имя появится в системе артистов
-            и кнопка «Загрузить трек» начнёт работать.
-          </p>
-        </div>
-      )}
 
       {profileOk && artistExists === true && (
         <div className="settings__card settings__card--success">
-          <CheckCircle size={16} /> Запись артиста найдена — можно загружать
+          <CheckCircle size={16} /> Запись артиста найдена - можно загружать
           треки.
         </div>
       )}
