@@ -13,10 +13,10 @@ export const moderatorApi = {
       },
     }),
 
-  getComplaints: () => request('/api/moderator/complaints'),
+  getComplaints: () => request('/moderator/complaints'),
   
   resolveComplaint: (id) =>
-    request(`/api/moderator/complaints/${id}/resolve`, {
+    request(`/moderator/complaints/${id}/resolve`, {
       method: 'PUT',
     }),
 };

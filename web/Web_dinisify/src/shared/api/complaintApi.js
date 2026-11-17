@@ -9,7 +9,7 @@ export const complaintApi = {
 
   
   create: (targetType, targetId, reason) =>
-    request('/api/complaints', {
+    request('/complaints', {
       method: 'POST',
       body: { targetType: typeMap[targetType] ?? 0, targetId, reason },
     }),
