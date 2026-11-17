@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { UserPlus, ArrowLeft } from "lucide-react";
 import { api } from "shared/hooks/client.js";
+import { useRegister } from '../../../shared/hooks/register';
 import "./Register_window.css";
 
-function Register_window({ auth, onRegisterSuccess, onGoToLogin, onCancel }) {
+function Register_window({ auth, onRegisterSuccess, onGoToLogin, onCancel}) {
   const [email, setEmail] = useState("");
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const { register, loading, fieldErrors } = useRegister();
   const [error, setError] = useState("");
   const [status, setStatus] = useState("idle"); // idle | registering | profile | done
 
@@ -43,39 +45,15 @@ function Register_window({ auth, onRegisterSuccess, onGoToLogin, onCancel }) {
 
     setStatus("registering");
 
-    /* Step 1 — register + auto-login (useAuth does both) */
-    const regResult = await auth.register(trimEmail, password);
+    const regResult = await register(trimEmail, password, trimNickname);
     if (!regResult.success) {
       setError(regResult.error || "Не удалось зарегистрироваться");
       setStatus("idle");
       return;
     }
 
-    /* Step 2 — save nickname */
-    setStatus("profile");
-    try {
-      const me = await auth.fetchMe?.();
-      const userId = me?.id ?? auth.user?.id;
-      if (!userId) throw new Error("Не удалось получить ID пользователя");
-
-      await api.put(`/users/${userId}`, {
-        nickname: trimNickname,
-        name: trimNickname,
-        email: trimEmail,
-      });
-
-      /* Step 3 — refresh auth so auth.user.name is the new value everywhere */
-      await auth.fetchMe?.();
-
-      setStatus("done");
-      onRegisterSuccess?.();
-    } catch (err) {
-      setError(
-        `Аккаунт создан, но имя не сохранилось: ${err.message}. ` +
-          `Вы можете изменить имя в Настройках.`,
-      );
-      setStatus("idle");
-    }
+    setStatus("done");
+    onRegisterSuccess?.();
   };
 
   return (
