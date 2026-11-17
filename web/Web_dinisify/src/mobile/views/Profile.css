@@ -1,0 +1,173 @@
+.profile {
+  padding: 16px 12px 96px;
+}
+
+.profile__back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #1976d2;
+  font-size: 13px;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.profile__header {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.profile__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #e0e0e0;
+  flex-shrink: 0;
+}
+
+.profile__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile__avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+  color: #888;
+}
+
+.profile__info h1 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.profile__badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.profile__badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: #eee;
+  color: #555;
+  text-transform: capitalize;
+}
+
+.profile__badge--admin {
+  background: #ede7f6;
+  color: #5e35b1;
+}
+
+.profile__badge--moderator {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.profile__badge--user {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.profile__since {
+  font-size: 12px;
+  color: #888;
+  margin: 6px 0 0;
+}
+
+.profile__stats {
+  display: flex;
+  gap: 24px;
+  padding: 12px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 16px;
+}
+
+.profile__stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile__stat strong {
+  font-size: 18px;
+}
+
+.profile__stat span {
+  font-size: 12px;
+  color: #888;
+}
+
+.profile__follow {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #1976d2;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.profile__follow:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile__section h2 {
+  font-size: 15px;
+  margin: 16px 0 8px;
+}
+
+.profile__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile__list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.profile__user-link {
+  color: #1976d2;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.profile__empty {
+  font-size: 13px;
+  color: #999;
+  font-style: italic;
+}
+
+.profile__hint {
+  padding: 24px;
+  color: #888;
+  text-align: center;
+}
+
+.profile__hint--small {
+  padding: 8px 0;
+  font-size: 12px;
+}
+
+.profile__error {
+  color: #c62828;
+  font-size: 13px;
+  padding: 8px 0;
+  text-align: center;
+}

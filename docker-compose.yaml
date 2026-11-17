@@ -9,7 +9,7 @@ services:
       - "3300:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./init-scripts:/docker-entrypoint-initdb.d:z
     healthcheck:
       test:
         [

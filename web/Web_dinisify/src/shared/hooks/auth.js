@@ -92,6 +92,24 @@ export function useAuth() {
     }
   };
 
+  const loginAsGuest = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await authApi.guest();
+      const newToken = data?.token ?? data?.access_token ?? data;
+      if (!newToken) throw new Error('токен не получен');
+      
+      persist(newToken);
+      
+      return { success: true };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
   const logout = () => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(ROLE_KEY);
@@ -99,7 +117,6 @@ export function useAuth() {
     setRole('guest');
     setUser(null);
   };
-
   return {
     token,
     role,

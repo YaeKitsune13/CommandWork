@@ -1,0 +1,15 @@
+.settings { padding: 16px 12px 96px; max-width: 500px; margin: 0 auto; }
+.settings__back { background: none; border: none; cursor: pointer; color: #1976d2; font-size: 13px; margin-bottom: 12px; padding: 0; }
+.settings__form { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+.settings__field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #444; }
+.settings__field input, .settings__field select {
+  padding: 10px; border: 1px solid #ccc; font-size: 14px;
+}
+.settings__submit {
+  padding: 12px; background: #1976d2; color: #fff; border: none;
+  font-size: 15px; cursor: pointer; margin-top: 8px;
+}
+.settings__submit:disabled { opacity: 0.6; }
+.settings__success { color: #2e7d32; font-size: 13px; background: #e8f5e9; padding: 10px; }
+.settings__error { color: #c62828; font-size: 13px; }
+.settings__hint { padding: 24px; text-align: center; color: #888; }

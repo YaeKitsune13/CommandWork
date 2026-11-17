@@ -1,0 +1,80 @@
+.album {
+  padding: 16px 12px 96px; /* 96px снизу — под фиксированный PlayerBar */
+}
+
+.album__back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #1976d2;
+  font-size: 13px;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.album__header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.album__cover {
+  width: 96px;
+  height: 96px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f0f0f0;
+}
+
+.album__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.album__cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: #bbb;
+}
+
+.album__meta h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.album__artist {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.album__date {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #888;
+}
+
+.album__tracks h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.album__hint {
+  color: #999;
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+.album__error {
+  color: #c62828;
+  padding: 24px;
+  text-align: center;
+}
