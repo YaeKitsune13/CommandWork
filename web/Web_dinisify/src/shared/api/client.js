@@ -31,9 +31,10 @@ export async function request(path, { method = 'GET', body, auth = true } = {}) 
   }
 
   if (!response.ok) {
-    if (response.status === 401 && auth && !path.includes('/auth/login')) {
+     if (response.status === 401 && auth && !path.includes('/auth/login')) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem('role');
+      window.dispatchEvent(new CustomEvent('auth:expired')); // <--- ВОТ ЭТО
     }
 
     let message = `Ошибка ${response.status}`;
