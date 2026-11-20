@@ -4,7 +4,7 @@ import { api } from "shared/hooks/client.js";
 import { imageUrl, onImgError } from "shared/fallbackImage.js";
 import "./MyPlaylists_window.css";
 
-function MyPlaylists_window({ auth }) {
+function MyPlaylists_window({ auth, onSelectPlaylist }) {
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,7 +33,6 @@ function MyPlaylists_window({ auth }) {
 
   useEffect(() => {
     loadPlaylists();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.user?.id]);
 
   const handleCreate = async (e) => {
@@ -121,7 +120,19 @@ function MyPlaylists_window({ auth }) {
       {!loading && playlists.length > 0 && (
         <div className="playlist-grid">
           {playlists.map((p) => (
-            <div key={p.id} className="playlist-card">
+            <div
+              key={p.id}
+              className="playlist-card"
+              role="button"
+              tabIndex={0}
+              onClick={() => onSelectPlaylist?.(p)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelectPlaylist?.(p);
+                }
+              }}
+            >
               <div className="playlist-card__cover">
                 {p.image ? (
                   <img

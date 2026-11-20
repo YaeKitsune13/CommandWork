@@ -3,6 +3,7 @@ import { request, API_URL } from './client';
 export const trackApi = {
   // В спецификации (v1) старый роут /api/music/meta заменен на /api/tracks/{id}
   meta: (id) => request(`/tracks/${id}`),
+  getUserTracks: (userId) => request(`/tracks/user/${userId}`),
 
   /**
    * Загрузка трека с прогрессом.

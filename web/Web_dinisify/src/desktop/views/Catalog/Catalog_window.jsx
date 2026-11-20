@@ -22,7 +22,12 @@ function toTrack(item) {
   return {
     id: src.id ?? src.track_id ?? src.music_id,
     name: src.name ?? src.title,
-    author: src.author ?? src.artist,
+    author:
+      src.author ??
+      src.artist ??
+      src.owner?.nickname ??
+      src.uploader?.nickname ??
+      src.user?.nickname,
     genre: src.genre,
     image: src.image ?? src.cover,
   };
@@ -30,21 +35,22 @@ function toTrack(item) {
 
 function Catalog_window({ onPlayTrack }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [allTracks, setAllTracks] = useState([]);
+  const [tracks, setTracks] = useState([]);
+  const [selectedAuthor, setSelectedAuthor] = useState(null);
 
   const loadDefault = async () => {
     setLoading(true);
     setError("");
     try {
-      // /charts accepts empty params and is AllowAnonymous.
-      const result = await api.get("/charts?period=week&limit=50", {
-        auth: false,
-      });
+      const result = await api.get("/tracks", { auth: false });
       const items = extractList(result)
         .map(toTrack)
-        .filter((t) => t.id);
+        .filter((t) => t.id != null);
+
+      setAllTracks(items);
       setTracks(items);
     } catch (err) {
       setError(err.message || "Не удалось загрузить каталог");
@@ -67,7 +73,8 @@ function Catalog_window({ onPlayTrack }) {
       });
       const items = extractList(result)
         .map(toTrack)
-        .filter((t) => t.id);
+        .filter((t) => t.id != null);
+
       setTracks(items);
     } catch (err) {
       setError(err.message || "Ошибка поиска");
@@ -81,13 +88,16 @@ function Catalog_window({ onPlayTrack }) {
   }, []);
 
   const authors = Array.from(
-    new Map(
-      tracks.map((t) => [
-        t.author,
-        { name: t.author, count: 0, photo: t.image },
-      ]),
-    ).values(),
-  );
+    new Set(allTracks.map((t) => t.author).filter(Boolean)),
+  ).map((name) => ({
+    name,
+    count: allTracks.filter((t) => t.author === name).length,
+  }));
+
+  const visibleTracks = selectedAuthor
+    ? tracks.filter((t) => t.author === selectedAuthor)
+    : tracks;
+
   tracks.forEach((t) => {
     const a = authors.find((x) => x.name === t.author);
     if (a) a.count += 1;
@@ -103,12 +113,12 @@ function Catalog_window({ onPlayTrack }) {
             placeholder="Поиск Песен, Артистов, Плейлистов"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && loadTracks(searchQuery)}
+            onKeyDown={(e) => e.key === "Enter" && runSearch(searchQuery)}
           />
         </div>
         <button
           className="catalog__search-btn"
-          onClick={() => loadTracks(searchQuery)}
+          onClick={() => runSearch(searchQuery)}
         >
           Search
         </button>
@@ -123,18 +133,23 @@ function Catalog_window({ onPlayTrack }) {
         <>
           <section className="catalog__section">
             <div className="catalog__authors">
-              {authors.map((a) => (
-                <button key={a.name} className="author-card" type="button">
-                  <div className="author-card__image-wrapper">
-                    <img
-                      src={imageUrl(a.photo)}
-                      onError={onImgError}
-                      alt={a.name}
-                      className="author-card__image"
-                    />
-                  </div>
-                  <span className="author-card__name">{a.name || "—"}</span>
-                  <span className="author-card__count">{a.count} Песен</span>
+              {authors.map((author) => (
+                <button
+                  key={author.name}
+                  className={`author-card ${
+                    selectedAuthor === author.name ? "author-card--active" : ""
+                  }`}
+                  type="button"
+                  onClick={() =>
+                    setSelectedAuthor((current) =>
+                      current === author.name ? null : author.name,
+                    )
+                  }
+                >
+                  <span className="author-card__name">{author.name}</span>
+                  <span className="author-card__count">
+                    {author.count} Песен
+                  </span>
                 </button>
               ))}
             </div>
@@ -144,7 +159,7 @@ function Catalog_window({ onPlayTrack }) {
 
           <section className="catalog__section">
             <ul className="catalog__tracks">
-              {tracks.map((t) => (
+              {visibleTracks.map((t) => (
                 <li key={t.id} className="track-row">
                   <button
                     className="track-row__play"
