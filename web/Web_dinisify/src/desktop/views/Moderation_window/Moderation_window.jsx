@@ -98,7 +98,12 @@ function MusicApprovals() {
   const review = async (trackId, approved) => {
     setBusyId(trackId);
     try {
-      await api.put("/moderator/music/review", { musicId: trackId, approved });
+      await api.put("/moderator/music/review", {
+        musicId: trackId,
+        isApproved: approved,
+        rejectionReason: null,
+      });
+
       setItems((prev) =>
         prev.filter((t) => pick(t, "id", "track_id", "music_id") !== trackId),
       );

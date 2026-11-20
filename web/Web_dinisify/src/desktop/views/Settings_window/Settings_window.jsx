@@ -1,26 +1,20 @@
 import { useEffect, useState } from "react";
-import {
-  Save,
-  Key,
-  LogOut,
-  AlertTriangle,
-  CheckCircle,
-  Info,
-} from "lucide-react";
+import { Save, Key, LogOut, AlertTriangle, CheckCircle } from "lucide-react";
+// ИСПОЛЬЗУЕМ АЛИАС. Если api лежит в src/api, то @/api/userApi
+import { userApi } from "shared/api/userApi";
+// Если api в shared, используй: import { userApi } from "shared/api/userApi";
 import { api } from "shared/hooks/client.js";
 import "./Settings_window.css";
 
 function Settings_window({ auth }) {
   const user = auth?.user;
 
-  // Profile form
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState("");
   const [profileOk, setProfileOk] = useState(false);
 
-  // Password form
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,41 +22,18 @@ function Settings_window({ auth }) {
   const [pwdMsg, setPwdMsg] = useState("");
   const [pwdOk, setPwdOk] = useState(false);
 
-  // Artist status (informational)
-  const [artistExists, setArtistExists] = useState(null);
-
-  // Sync from auth.user whenever it changes
+  // Загружаем профиль из БД, чтобы подтянуть email
   useEffect(() => {
-    setNickname(user?.name ?? "");
-    setEmail(user?.email ?? "");
-  }, [user?.id, user?.name, user?.email]);
-
-  // Check whether an artist row exists for the current name
-  useEffect(() => {
-    if (!user?.name) {
-      setArtistExists(false);
-      return;
+    if (user?.id) {
+      userApi
+        .getProfile(user.id)
+        .then((profile) => {
+          setEmail(profile.email || "");
+          setNickname(profile.nickname || user.name || "");
+        })
+        .catch((err) => console.error("Ошибка загрузки профиля:", err));
     }
-    let cancelled = false;
-    api
-      .get(`/search?query=${encodeURIComponent(user.name)}`, { auth: false })
-      .then((result) => {
-        if (cancelled) return;
-        const artists = result?.artists ?? [];
-        const norm = (s) =>
-          typeof s === "string" ? s.trim().toLowerCase() : "";
-        const found = artists.some(
-          (a) => norm(a.name ?? a.Name) === norm(user.name),
-        );
-        setArtistExists(found);
-      })
-      .catch(() => {
-        if (!cancelled) setArtistExists(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.name]);
+  }, [user?.id, user?.name]);
 
   const refreshAuth = async () => {
     if (typeof auth?.fetchMe === "function") {
@@ -74,45 +45,23 @@ function Settings_window({ auth }) {
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /* Save profile                                                      */
-  /* ---------------------------------------------------------------- */
   const saveProfile = async (e) => {
     e?.preventDefault?.();
-    if (!user?.id) {
-      setProfileMsg("Вы не авторизованы");
-      setProfileOk(false);
-      return;
-    }
+    if (!user?.id) return setProfileMsg("Вы не авторизованы");
 
     const nick = nickname.trim();
     const mail = email.trim();
 
-    if (!nick) {
-      setProfileMsg("Введите имя — без него загрузка треков невозможна");
-      setProfileOk(false);
-      return;
-    }
-    if (mail && !/^\S+@\S+\.\S+$/.test(mail)) {
-      setProfileMsg("Некорректный email");
-      setProfileOk(false);
-      return;
-    }
+    if (!nick) return setProfileMsg("Введите имя");
 
     setProfileSaving(true);
     setProfileMsg("");
     try {
-      // Send both `name` and `nickname` — backend DTO may use either
-      const payload = {
+      await userApi.updateProfile(user.id, {
         nickname: nick,
-        name: nick,
         email: mail || undefined,
-      };
-      await api.put(`/users/${user.id}`, payload);
-
-      // Refresh auth state so auth.user.name is the new value immediately
+      });
       await refreshAuth();
-
       setProfileMsg("✓ Профиль сохранён");
       setProfileOk(true);
     } catch (err) {
@@ -123,36 +72,18 @@ function Settings_window({ auth }) {
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /* Change password                                                   */
-  /* ---------------------------------------------------------------- */
   const savePassword = async (e) => {
     e?.preventDefault?.();
     if (!user?.id) return;
 
-    if (!oldPassword || !newPassword) {
-      setPwdMsg("Заполните оба поля");
-      setPwdOk(false);
-      return;
-    }
-    if (newPassword.length < 6) {
-      setPwdMsg("Пароль слишком короткий (минимум 6 символов)");
-      setPwdOk(false);
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPwdMsg("Пароли не совпадают");
-      setPwdOk(false);
-      return;
-    }
+    if (!oldPassword || !newPassword) return setPwdMsg("Заполните оба поля");
+    if (newPassword !== confirmPassword)
+      return setPwdMsg("Пароли не совпадают");
 
     setPwdSaving(true);
     setPwdMsg("");
     try {
-      await api.put(`/users/${user.id}/password`, {
-        oldPassword,
-        newPassword,
-      });
+      await api.put(`/users/${user.id}/password`, { oldPassword, newPassword });
       setPwdMsg("✓ Пароль изменён");
       setPwdOk(true);
       setOldPassword("");
@@ -166,27 +97,17 @@ function Settings_window({ auth }) {
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /* Logout                                                            */
-  /* ---------------------------------------------------------------- */
   const handleLogout = () => {
     auth?.logout?.();
-    // App.jsx should navigate back to catalog after logout;
-    // if not, this fires a reload as a safe fallback.
     window.location.reload();
   };
 
-  /* ---------------------------------------------------------------- */
-  /* Render                                                            */
-  /* ---------------------------------------------------------------- */
   if (auth?.isGuest) {
     return (
       <div className="settings">
         <h1 className="settings__title">Настройки</h1>
         <div className="settings__card">
-          <p style={{ color: "#888" }}>
-            Войдите, чтобы изменить профиль и настройки аккаунта.
-          </p>
+          <p style={{ color: "#888" }}>Войдите, чтобы изменить настройки.</p>
         </div>
       </div>
     );
@@ -196,16 +117,6 @@ function Settings_window({ auth }) {
     <div className="settings">
       <h1 className="settings__title">Настройки</h1>
 
-      {/* Debug panel — remove after everything works */}
-      <details className="settings__debug">
-        <summary>Debug: текущий auth.user</summary>
-        <pre>{JSON.stringify(user, null, 2)}</pre>
-        <p style={{ color: "#888", margin: "8px 0 0" }}>
-          artist row exists: <b>{String(artistExists)}</b>
-        </p>
-      </details>
-
-      {/* Profile card */}
       <form className="settings__card" onSubmit={saveProfile}>
         <h2 className="settings__section-title">Профиль</h2>
 
@@ -223,20 +134,14 @@ function Settings_window({ auth }) {
         )}
 
         <div className="settings__group">
-          <label htmlFor="nickname">
-            Имя пользователя <span style={{ color: "#E5383B" }}>*</span>
-          </label>
+          <label htmlFor="nickname">Имя пользователя</label>
           <input
             id="nickname"
             type="text"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            placeholder="Например: dinis или Dinis K."
-            autoComplete="nickname"
+            placeholder="Например: dinis"
           />
-          <small style={{ color: "#666", fontSize: 12 }}>
-            Это имя будет использоваться как имя артиста при загрузке треков.
-          </small>
         </div>
 
         <div className="settings__group">
@@ -247,7 +152,6 @@ function Settings_window({ auth }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            autoComplete="email"
           />
         </div>
 
@@ -256,20 +160,10 @@ function Settings_window({ auth }) {
           className="settings__save-btn"
           disabled={profileSaving}
         >
-          <Save size={16} />{" "}
-          {profileSaving ? "Сохранение..." : "Сохранить изменения"}
+          <Save size={16} /> {profileSaving ? "Сохранение..." : "Сохранить"}
         </button>
       </form>
 
-
-      {profileOk && artistExists === true && (
-        <div className="settings__card settings__card--success">
-          <CheckCircle size={16} /> Запись артиста найдена - можно загружать
-          треки.
-        </div>
-      )}
-
-      {/* Password card */}
       <form className="settings__card" onSubmit={savePassword}>
         <h2 className="settings__section-title">
           <Key size={16} /> Смена пароля
@@ -283,35 +177,27 @@ function Settings_window({ auth }) {
         )}
 
         <div className="settings__group">
-          <label htmlFor="oldPassword">Текущий пароль</label>
+          <label>Текущий пароль</label>
           <input
-            id="oldPassword"
             type="password"
             value={oldPassword}
             onChange={(e) => setOldPassword(e.target.value)}
-            autoComplete="current-password"
           />
         </div>
-
         <div className="settings__group">
-          <label htmlFor="newPassword">Новый пароль</label>
+          <label>Новый пароль</label>
           <input
-            id="newPassword"
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            autoComplete="new-password"
           />
         </div>
-
         <div className="settings__group">
-          <label htmlFor="confirmPassword">Подтвердите новый пароль</label>
+          <label>Подтвердите новый пароль</label>
           <input
-            id="confirmPassword"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            autoComplete="new-password"
           />
         </div>
 
@@ -326,9 +212,6 @@ function Settings_window({ auth }) {
 
       <div className="settings__card">
         <h2 className="settings__section-title">Сессия</h2>
-        <p style={{ margin: "0 0 12px", color: "#888", fontSize: 13 }}>
-          Выйти из аккаунта на этом устройстве.
-        </p>
         <button
           type="button"
           className="settings__logout-btn"
