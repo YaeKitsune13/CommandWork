@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "shared/hooks/client.js";
 import { imageUrl, onImgError } from "shared/fallbackImage.js";
+import "./Playlist_Detail.css";
 
 const listFrom = (result) => {
   if (Array.isArray(result)) return result;

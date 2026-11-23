@@ -258,3 +258,7 @@
   color: #fff;
   background: #1f1f23;
 }
+
+.track-row__action--liked {
+  color: #e5383b;
+}
