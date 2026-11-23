@@ -4,23 +4,38 @@ import { api } from "shared/hooks/client.js";
 import { imageUrl, onImgError } from "shared/fallbackImage.js";
 import "./Catalog_window.css";
 
-// Defensive extractor: controllers may return a bare array or an envelope
-// like { items | data | tracks | music: [...] }. Handle all.
 function extractList(result) {
   if (!result) return [];
   if (Array.isArray(result)) return result;
-  for (const k of ["items", "data", "tracks", "music", "results"]) {
-    if (Array.isArray(result[k])) return result[k];
+
+  for (const key of ["items", "data", "tracks", "music", "results", "likes"]) {
+    if (Array.isArray(result[key])) return result[key];
   }
+
   return [];
 }
 
-// Charts may wrap each item as { track: {...}, playCount: N } or return
-// plain track objects. Normalize both to a flat track shape.
+function readLikeCount(result) {
+  if (typeof result === "number") return result;
+
+  for (const key of ["count", "likeCount", "likesCount", "total"]) {
+    if (typeof result?.[key] === "number") return result[key];
+  }
+
+  if (Array.isArray(result)) return result.length;
+
+  for (const key of ["items", "data", "likes", "results"]) {
+    if (Array.isArray(result?.[key])) return result[key].length;
+  }
+
+  return null;
+}
+
 function toTrack(item) {
   const src = item?.track ?? item ?? {};
+
   return {
-    id: src.id ?? src.track_id ?? src.music_id,
+    id: src.id ?? src.trackId ?? src.track_id ?? src.music_id,
     name: src.name ?? src.title,
     author:
       src.author ??
@@ -30,6 +45,11 @@ function toTrack(item) {
       src.user?.nickname,
     genre: src.genre,
     image: src.image ?? src.cover,
+    likeCount:
+      src.likeCount ??
+      src.likesCount ??
+      src.likes_count ??
+      (typeof src.likes === "number" ? src.likes : null),
   };
 }
 
@@ -37,21 +57,41 @@ function Catalog_window({ onPlayTrack }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [likeError, setLikeError] = useState("");
   const [allTracks, setAllTracks] = useState([]);
   const [tracks, setTracks] = useState([]);
   const [selectedAuthor, setSelectedAuthor] = useState(null);
+  const [likedTrackIds, setLikedTrackIds] = useState(() => new Set());
+  const [busyLikeId, setBusyLikeId] = useState(null);
+
+  const loadLikeCounts = async (trackList) =>
+    Promise.all(
+      trackList.map(async (track) => {
+        if (track.likeCount != null) return track;
+
+        try {
+          const result = await api.get(`/tracks/${track.id}/likes`);
+          return { ...track, likeCount: readLikeCount(result) };
+        } catch {
+          return { ...track, likeCount: null };
+        }
+      }),
+    );
 
   const loadDefault = async () => {
     setLoading(true);
     setError("");
+
     try {
       const result = await api.get("/tracks", { auth: false });
-      const items = extractList(result)
+      const rawTracks = extractList(result)
         .map(toTrack)
-        .filter((t) => t.id != null);
+        .filter((track) => track.id != null);
 
-      setAllTracks(items);
-      setTracks(items);
+      const tracksWithCounts = await loadLikeCounts(rawTracks);
+
+      setAllTracks(tracksWithCounts);
+      setTracks(tracksWithCounts);
     } catch (err) {
       setError(err.message || "Не удалось загрузить каталог");
     } finally {
@@ -61,21 +101,25 @@ function Catalog_window({ onPlayTrack }) {
 
   const runSearch = async (query) => {
     const q = query.trim();
+
     if (!q) {
-      // Empty query → don't hit /search (it 400s). Fall back to the default list.
-      return loadDefault();
+      await loadDefault();
+      return;
     }
+
     setLoading(true);
     setError("");
+
     try {
       const result = await api.get(`/search?query=${encodeURIComponent(q)}`, {
         auth: false,
       });
-      const items = extractList(result)
-        .map(toTrack)
-        .filter((t) => t.id != null);
 
-      setTracks(items);
+      const rawTracks = extractList(result)
+        .map(toTrack)
+        .filter((track) => track.id != null);
+
+      setTracks(await loadLikeCounts(rawTracks));
     } catch (err) {
       setError(err.message || "Ошибка поиска");
     } finally {
@@ -87,21 +131,61 @@ function Catalog_window({ onPlayTrack }) {
     loadDefault();
   }, []);
 
+  const toggleLike = async (track) => {
+    if (track.id == null || busyLikeId != null) return;
+
+    const currentlyLiked = likedTrackIds.has(track.id);
+
+    setBusyLikeId(track.id);
+    setLikeError("");
+
+    try {
+      if (currentlyLiked) {
+        await api.delete(`/tracks/${track.id}/like`);
+
+        setLikedTrackIds((current) => {
+          const next = new Set(current);
+          next.delete(track.id);
+          return next;
+        });
+
+        updateLikeCount(track.id, -1);
+      } else {
+        await api.post(`/tracks/${track.id}/like`);
+
+        setLikedTrackIds((current) => new Set(current).add(track.id));
+        updateLikeCount(track.id, 1);
+      }
+    } catch (err) {
+      setLikeError(err.message || "Не удалось обновить отметку «Нравится»");
+    } finally {
+      setBusyLikeId(null);
+    }
+  };
+
+  const updateLikeCount = (trackId, change) => {
+    const update = (list) =>
+      list.map((track) =>
+        track.id === trackId && track.likeCount != null
+          ? { ...track, likeCount: Math.max(0, track.likeCount + change) }
+          : track,
+      );
+
+    setTracks(update);
+    setAllTracks(update);
+  };
+
+  // Author cards and counts are based on the full catalog.
   const authors = Array.from(
-    new Set(allTracks.map((t) => t.author).filter(Boolean)),
+    new Set(allTracks.map((track) => track.author).filter(Boolean)),
   ).map((name) => ({
     name,
-    count: allTracks.filter((t) => t.author === name).length,
+    count: allTracks.filter((track) => track.author === name).length,
   }));
 
   const visibleTracks = selectedAuthor
-    ? tracks.filter((t) => t.author === selectedAuthor)
+    ? tracks.filter((track) => track.author === selectedAuthor)
     : tracks;
-
-  tracks.forEach((t) => {
-    const a = authors.find((x) => x.name === t.author);
-    if (a) a.count += 1;
-  });
 
   return (
     <div className="catalog">
@@ -112,12 +196,16 @@ function Catalog_window({ onPlayTrack }) {
             className="catalog__search-input"
             placeholder="Поиск Песен, Артистов, Плейлистов"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && runSearch(searchQuery)}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") runSearch(searchQuery);
+            }}
           />
         </div>
+
         <button
           className="catalog__search-btn"
+          type="button"
           onClick={() => runSearch(searchQuery)}
         >
           Search
@@ -128,6 +216,7 @@ function Catalog_window({ onPlayTrack }) {
 
       {loading && <p>Загрузка...</p>}
       {error && <p style={{ color: "salmon" }}>{error}</p>}
+      {likeError && <p style={{ color: "salmon" }}>{likeError}</p>}
 
       {!loading && !error && (
         <>
@@ -159,36 +248,69 @@ function Catalog_window({ onPlayTrack }) {
 
           <section className="catalog__section">
             <ul className="catalog__tracks">
-              {visibleTracks.map((t) => (
-                <li key={t.id} className="track-row">
-                  <button
-                    className="track-row__play"
-                    onClick={() => onPlayTrack?.(t)}
-                    aria-label="Play"
-                  >
-                    <Play size={18} />
-                  </button>
-                  <div className="track-row__cover">
-                    <img
-                      src={imageUrl(t.image)}
-                      onError={onImgError}
-                      alt={t.name}
-                    />
-                  </div>
-                  <div className="track-row__info">
-                    <span className="track-row__title">{t.name}</span>
-                    <span className="track-row__artist">{t.author}</span>
-                  </div>
-                  <span className="track-row__genre">{t.genre}</span>
-                  <span className="track-row__duration">—</span>
-                  <button className="track-row__action" aria-label="Like">
-                    <Heart size={16} />
-                  </button>
-                  <button className="track-row__action" aria-label="More">
-                    <MoreHorizontal size={16} />
-                  </button>
-                </li>
-              ))}
+              {visibleTracks.map((track) => {
+                const isLiked = likedTrackIds.has(track.id);
+
+                return (
+                  <li key={track.id} className="track-row">
+                    <button
+                      className="track-row__play"
+                      type="button"
+                      onClick={() => onPlayTrack?.(track)}
+                      aria-label={`Play ${track.name ?? "track"}`}
+                    >
+                      <Play size={18} />
+                    </button>
+
+                    <div className="track-row__cover">
+                      <img
+                        src={imageUrl(track.image)}
+                        onError={onImgError}
+                        alt={track.name ?? ""}
+                      />
+                    </div>
+
+                    <div className="track-row__info">
+                      <span className="track-row__title">
+                        {track.name ?? "Без названия"}
+                      </span>
+                      <span className="track-row__artist">
+                        {track.author ?? "Неизвестный автор"}
+                      </span>
+                    </div>
+
+                    <span className="track-row__genre">
+                      {track.likeCount == null ? "♥ —" : `♥ ${track.likeCount}`}
+                    </span>
+
+                    <span className="track-row__duration">—</span>
+
+                    <button
+                      className={`track-row__action ${
+                        isLiked ? "track-row__action--liked" : ""
+                      }`}
+                      type="button"
+                      aria-label={isLiked ? "Unlike" : "Like"}
+                      aria-pressed={isLiked}
+                      disabled={busyLikeId === track.id}
+                      onClick={() => toggleLike(track)}
+                    >
+                      <Heart
+                        size={16}
+                        fill={isLiked ? "currentColor" : "none"}
+                      />
+                    </button>
+
+                    <button
+                      className="track-row__action"
+                      type="button"
+                      aria-label="More"
+                    >
+                      <MoreHorizontal size={16} />
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         </>
@@ -196,4 +318,5 @@ function Catalog_window({ onPlayTrack }) {
     </div>
   );
 }
+
 export default Catalog_window;

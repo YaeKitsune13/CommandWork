@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { api } from "shared/hooks/client.js";
-import { imageUrl, onImgError } from "shared/fallbackImage.js";
 import Sidebar from "./components/sidebar/sidebar";
 import Catalog_window from "./views/Catalog/Catalog_window";
 import Login_window from "./views/Login/Login_window";
@@ -10,14 +8,17 @@ import Profile_window from "./views/Profile/Profile_window";
 import Settings_window from "./views/Settings_window/Settings_window";
 import MyTracks_window from "./views/MyTracks_window/MyTracks_window";
 import MyPlaylists_window from "./views/MyPlaylists_window/MyPlaylists_window";
+import PlaylistDetail_window from "./views/Playlist_Detail/PlaylistDetail.jsx";
 import { useAuth } from "../shared/hooks/auth.js";
 import Admin_window from "./views/Admin/Admin_window";
 import Moderation_window from "./views/Moderation_window/Moderation_window";
 import "./App.css";
-  function App() {
+
+function App() {
   const auth = useAuth();
   const [currentView, setCurrentView] = useState("catalog");
   const [currentTrack, setCurrentTrack] = useState(null);
+  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
 
   return (
     <div className="app-layout">
@@ -25,7 +26,10 @@ import "./App.css";
         auth={{ role: auth.role }}
         onLogoClick={() => setCurrentView("catalog")}
         onLoginClick={() => setCurrentView("login")}
-        onNavigate={setCurrentView}
+        onNavigate={(view) => {
+          setCurrentView(view);
+          setSelectedPlaylist(null);
+        }}
       />
 
       <main className="app-main">
@@ -61,10 +65,27 @@ import "./App.css";
               }}
             />
           )}
-          {currentView == "settings" && <Settings_window auth={auth} />}
-          {currentView == "my-tracks" && <MyTracks_window auth={auth} />}
-          {currentView == "my-playlists" && <MyPlaylists_window auth={auth} />}
+
+          {currentView === "settings" && <Settings_window auth={auth} />}
+
+          {currentView === "my-tracks" && <MyTracks_window auth={auth} />}
+
+          {currentView === "my-playlists" &&
+            (selectedPlaylist ? (
+              <PlaylistDetail_window
+                playlistId={selectedPlaylist.id}
+                onBack={() => setSelectedPlaylist(null)}
+                onPlayTrack={setCurrentTrack}
+              />
+            ) : (
+              <MyPlaylists_window
+                auth={auth}
+                onSelectPlaylist={setSelectedPlaylist}
+              />
+            ))}
+
           {currentView === "moderation" && <Moderation_window auth={auth} />}
+
           {currentView === "admin" && <Admin_window auth={auth} />}
         </div>
 
