@@ -1,4 +1,3 @@
-// src/shared/fallbackImage.js
 import placeholder from '../assets/logo.png';
 
 export const FALLBACK_IMG = placeholder;

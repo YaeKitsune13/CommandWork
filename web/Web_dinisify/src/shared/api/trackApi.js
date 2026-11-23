@@ -1,7 +1,6 @@
 import { request, API_URL } from './client';
 
 export const trackApi = {
-  // В спецификации (v1) старый роут /api/music/meta заменен на /api/tracks/{id}
   meta: (id) => request(`/tracks/${id}`),
   getUserTracks: (userId) => request(`/tracks/user/${userId}`),
 
@@ -15,8 +14,6 @@ export const trackApi = {
     new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       
-      // ИСПОЛЬЗУЕМ API_URL и правильный путь /tracks
-      // Если API_URL = '/api', итоговый путь будет '/api/tracks'
       xhr.open('POST', `${API_URL}/tracks`);
 
       const token = localStorage.getItem('token');
@@ -35,7 +32,6 @@ export const trackApi = {
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve(data?.music ?? data);
         } else {
-          // Обработка ошибок в стиле ASP.NET Core
           let message = data?.error || data?.title || `Ошибка ${xhr.status}`;
           if (data?.fields) {
             const first = Object.values(data.fields).flat()[0];

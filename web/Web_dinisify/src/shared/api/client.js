@@ -5,7 +5,7 @@ export class ApiError extends Error {
   constructor(message, status, fields = null) {
     super(message);
     this.status = status;
-    this.fields = fields; // Сохраняем ошибки конкретных полей
+    this.fields = fields;
   }
 }
 

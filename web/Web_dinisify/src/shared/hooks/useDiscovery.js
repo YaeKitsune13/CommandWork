@@ -14,8 +14,6 @@ export function useDiscovery(kind = 'charts', options = {}) {
         kind === 'charts'
           ? await discoveryApi.charts(options)
           : await discoveryApi.recommendations(options.limit ?? 20);
-      
-      // Умный парсинг: либо это массив, либо объект с полем items
       const parsedItems = Array.isArray(data) ? data : (data?.items || []);
       setItems(parsedItems);
       

@@ -1,10 +1,8 @@
 import { request } from './client';
 
 export const adminApi = {
-  // Общая аналитика платформы
   getAnalytics: () => request('/admin/analytics'),
 
-  // Управление пользователями и модераторами
   getUsers: (search = '', page = 1, pageSize = 20) => {
     const params = new URLSearchParams({
       page: String(page),
@@ -17,7 +15,7 @@ export const adminApi = {
   changeUserRole: (id, role) =>
     request(`/admin/users/${id}/role`, {
       method: 'PATCH',
-      body: { role }, // 'user' | 'moderator' | 'admin'
+      body: { role },
     }),
 
   setUserBlocked: (id, isBlocked) =>
@@ -26,7 +24,6 @@ export const adminApi = {
       body: { isBlocked },
     }),
 
-  // Управление жанрами
   getGenres: () => request('/genres'),
 
   createGenre: (name) =>

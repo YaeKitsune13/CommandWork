@@ -2,43 +2,32 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { adminApi } from '../../shared/api/adminApi';
 import './ModerationPanel.css';
-
+ 
 export default function AdminPanel() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('analytics'); // 'analytics' | 'users' | 'genres'
-
-  // Аналитика
+  const [activeTab, setActiveTab] = useState('analytics');
   const [analytics, setAnalytics] = useState(null);
-
-  // Пользователи и модераторы
   const [users, setUsers] = useState([]);
   const [userSearch, setUserSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all'); // 'all' | 'moderator' | 'admin' | 'user'
-
-  // Жанры
+  const [roleFilter, setRoleFilter] = useState('all');
   const [genres, setGenres] = useState([]);
   const [newGenreName, setNewGenreName] = useState('');
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const loadAnalytics = useCallback(async () => {
     const data = await adminApi.getAnalytics();
     setAnalytics(data);
   }, []);
-
   const loadUsers = useCallback(async (searchQuery = '') => {
     const data = await adminApi.getUsers(searchQuery, 1, 50);
     const list = Array.isArray(data) ? data : data?.items;
     setUsers(Array.isArray(list) ? list : []);
   }, []);
-
   const loadGenres = useCallback(async () => {
     const data = await adminApi.getGenres();
     const list = Array.isArray(data) ? data : data?.items;
     setGenres(Array.isArray(list) ? list : []);
   }, []);
-
   const loadTab = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -56,11 +45,11 @@ export default function AdminPanel() {
       setLoading(false);
     }
   }, [activeTab, loadAnalytics, loadUsers, loadGenres, userSearch]);
-
+ 
   useEffect(() => {
     loadTab();
-  }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
-
+  }, [activeTab]);
+ 
   const handleUserSearchSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -73,7 +62,7 @@ export default function AdminPanel() {
       setLoading(false);
     }
   };
-
+ 
   const handleRoleChange = async (user, nextRole) => {
     if (user.role === nextRole) return;
     if (!window.confirm(`Назначить пользователю ${user.nickname} роль «${nextRole}»?`)) return;
@@ -84,7 +73,7 @@ export default function AdminPanel() {
       alert('Ошибка смены роли: ' + err.message);
     }
   };
-
+ 
   const handleToggleBlock = async (user) => {
     const nextBlocked = !user.isBlocked;
     const label = nextBlocked ? 'заблокировать' : 'разблокировать';
@@ -96,7 +85,7 @@ export default function AdminPanel() {
       alert('Ошибка блокировки: ' + err.message);
     }
   };
-
+ 
   const handleCreateGenre = async (e) => {
     e.preventDefault();
     const name = newGenreName.trim();
@@ -109,7 +98,7 @@ export default function AdminPanel() {
       alert('Ошибка создания жанра: ' + err.message);
     }
   };
-
+ 
   const handleRenameGenre = async (genre) => {
     const nextName = window.prompt('Новое название жанра:', genre.name);
     if (!nextName || !nextName.trim() || nextName.trim() === genre.name) return;
@@ -120,7 +109,7 @@ export default function AdminPanel() {
       alert('Ошибка переименования: ' + err.message);
     }
   };
-
+ 
   const handleDeleteGenre = async (genre) => {
     if (!window.confirm(`Удалить жанр «${genre.name}»?`)) return;
     try {
@@ -130,22 +119,22 @@ export default function AdminPanel() {
       alert('Ошибка удаления жанра: ' + err.message);
     }
   };
-
+ 
   const filteredUsers = roleFilter === 'all'
     ? users
     : users.filter((u) => u.role === roleFilter);
-
+ 
   return (
     <div className="mod-panel">
-      <div className="mod-panel__top" style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+      <div className="mod-panel__top">
         <button onClick={() => navigate(-1)} className="mod-panel__back">Назад</button>
         <Link to="/moderation" className="mod-panel__add-btn">Панель модерации</Link>
       </div>
-
+ 
       <header className="mod-panel__header">
         <h1>Панель администратора</h1>
       </header>
-
+ 
       <div className="mod-panel__tabs">
         <button
           className={activeTab === 'analytics' ? 'active' : ''}
@@ -166,10 +155,10 @@ export default function AdminPanel() {
           Жанры
         </button>
       </div>
-
+ 
       {loading && <p className="mod-panel__hint">Загрузка...</p>}
       {error && <p className="mod-panel__error">{error}</p>}
-
+ 
       {!loading && activeTab === 'analytics' && analytics && (
         <div className="mod-panel__list">
           {typeof analytics === 'object' ? (
@@ -182,25 +171,24 @@ export default function AdminPanel() {
               </div>
             ))
           ) : (
-            <pre>{String(analytics)}</pre>
+            <pre className="mod-panel__pre">{String(analytics)}</pre>
           )}
         </div>
       )}
-
+ 
       {!loading && activeTab === 'users' && (
         <div className="mod-panel__list">
-          <form onSubmit={handleUserSearchSubmit} style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+          <form className="mod-panel__search" onSubmit={handleUserSearchSubmit}>
             <input
               type="text"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               placeholder="Поиск по нику или email..."
-              style={{ flex: 1 }}
             />
-            <button type="submit">Найти</button>
+            <button type="submit" className="mod-panel__search-btn">Найти</button>
           </form>
-
-          <div style={{ marginBottom: '10px' }}>
+ 
+          <div className="mod-panel__filters">
             <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
               <option value="all">Все роли</option>
               <option value="user">Пользователи (user)</option>
@@ -208,7 +196,7 @@ export default function AdminPanel() {
               <option value="admin">Администраторы (admin)</option>
             </select>
           </div>
-
+ 
           {filteredUsers.length === 0 && <p className="mod-panel__hint">Пользователи не найдены</p>}
           {filteredUsers.map((u) => (
             <div key={u.id} className="mod-card">
@@ -221,6 +209,7 @@ export default function AdminPanel() {
               </div>
               <div className="mod-card__actions">
                 <select
+                  className="mod-card__select"
                   value={u.role}
                   onChange={(e) => handleRoleChange(u, e.target.value)}
                   aria-label="Роль пользователя"
@@ -240,21 +229,20 @@ export default function AdminPanel() {
           ))}
         </div>
       )}
-
+ 
       {!loading && activeTab === 'genres' && (
         <div className="mod-panel__list">
-          <form onSubmit={handleCreateGenre} style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+          <form className="mod-panel__search" onSubmit={handleCreateGenre}>
             <input
               type="text"
               value={newGenreName}
               onChange={(e) => setNewGenreName(e.target.value)}
               placeholder="Название нового жанра..."
               required
-              style={{ flex: 1 }}
             />
             <button type="submit" className="btn-approve">+ Добавить</button>
           </form>
-
+ 
           {genres.length === 0 && <p className="mod-panel__hint">Жанров пока нет</p>}
           {genres.map((g) => (
             <div key={g.id} className="mod-card">
@@ -277,3 +265,4 @@ export default function AdminPanel() {
     </div>
   );
 }
+ 

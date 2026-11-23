@@ -1,155 +1,239 @@
+ 
 .track-page {
-  padding: 16px 12px 96px; /* 96px — под PlayerBar */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 40px 40px;
+  box-sizing: border-box;
+  color: #fff;
+  font-family: system-ui, sans-serif;
 }
-
+ 
+.track-page__hint {
+  padding: 32px 40px;
+  color: #b3b3b3;
+}
+ 
+.track-page__error {
+  margin: 0;
+  font-size: 0.9rem;
+  color: salmon;
+}
+ 
 .track-page__back {
-  background: none;
-  border: none;
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: transparent;
+  color: #b3b3b3;
+  border: 1px solid #1f1f23;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-family: inherit;
   cursor: pointer;
-  color: #1976d2;
-  font-size: 13px;
-  padding: 0;
-  margin-bottom: 12px;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-
+ 
+.track-page__back:hover {
+  background: #1f1f23;
+  color: #fff;
+}
+ 
 .track-page__header {
   display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 24px;
+  align-items: flex-end;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #E5383B;
 }
-
+ 
 .track-page__cover {
-  width: 120px;
-  height: 120px;
-  overflow: hidden;
   flex-shrink: 0;
-  background: #f0f0f0;
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1f1f23, #2a2a30);
+  border: 3px solid #660708;
 }
-
+ 
 .track-page__cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
-
+ 
 .track-page__cover-placeholder {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
-  color: #bbb;
+  font-size: 4rem;
+  color: #8a8a8a;
 }
-
+ 
 .track-page__meta {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
 }
-
+ 
 .track-page__meta h1 {
   margin: 0;
-  font-size: 20px;
-  line-height: 1.25;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #fff;
+  overflow-wrap: anywhere;
 }
-
+ 
 .track-page__artist {
   margin: 0;
-  font-size: 14px;
-  color: #555;
+  font-size: 0.95rem;
+  color: #8a8a8a;
 }
-
-.track-page__album-link {
-  font-size: 13px;
-  color: #1976d2;
+ 
+.track-page__album-link,
+.track-page__owner-link {
+  font-size: 0.9rem;
+  color: #E5383B;
   text-decoration: none;
+  transition: color 0.15s ease;
 }
-
+ 
+.track-page__album-link:hover,
+.track-page__owner-link:hover {
+  color: #ff7733;
+  text-decoration: underline;
+}
+ 
 .track-page__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 4px;
+  gap: 8px;
 }
-
+ 
 .track-page__badge {
-  font-size: 11px;
-  padding: 3px 8px;
-  background: #eee;
-  color: #555;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  color: #b3b3b3;
+  background: #141418;
+  border: 1px solid #1f1f23;
+  border-radius: 999px;
 }
-
+ 
 .track-page__badge--approved {
-  background: #e8f5e9;
-  color: #2e7d32;
+  color: #7ddc9a;
+  border-color: #2e6b44;
 }
-
+ 
 .track-page__badge--pending {
-  background: #fff3e0;
-  color: #ef6c00;
+  color: #ffb74d;
+  border-color: #7a5420;
 }
-
+ 
 .track-page__badge--rejected {
-  background: #ffebee;
-  color: #c62828;
+  color: salmon;
+  border-color: #850000;
 }
-
+ 
 .track-page__rejection {
-  font-size: 12px;
-  color: #c62828;
-  margin: 4px 0 0;
+  margin: 0;
+  font-size: 0.85rem;
+  color: salmon;
 }
-
+ 
 .track-page__play {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  background: #1976d2;
+  align-self: flex-start;
+  height: 44px;
+  padding: 0 28px;
+  background: #E5383B;
   color: #fff;
-  font-size: 15px;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  margin-bottom: 20px;
+  transition: background 0.15s ease;
 }
-
+ 
+.track-page__play:hover {
+  background: #ff7733;
+}
+ 
+.track-page__back:focus-visible,
+.track-page__play:focus-visible,
+.track-page__album-link:focus-visible,
+.track-page__owner-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+ 
 .track-page__details {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 4px 12px;
-  font-size: 13px;
+  gap: 12px 24px;
+  margin: 0;
+  padding: 20px 24px;
+  background: #141418;
+  border: 1px solid #1f1f23;
+  border-radius: 12px;
 }
-
+ 
 .track-page__details dt {
-  color: #888;
+  font-size: 0.85rem;
+  color: #8a8a8a;
 }
-
+ 
 .track-page__details dd {
   margin: 0;
-  color: #333;
-  word-break: break-all;
+  font-size: 0.9rem;
+  color: #e5e5e5;
+  min-width: 0;
 }
-
+ 
 .track-page__file {
-  font-family: monospace;
-  font-size: 12px;
-  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #b3b3b3;
 }
-
-.track-page__hint {
-  padding: 24px;
-  color: #888;
-  text-align: center;
+ 
+@media (max-width: 600px) {
+  .track-page {
+    padding: 20px 16px 32px;
+  }
+ 
+  .track-page__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+ 
+  .track-page__cover {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+ 
+  .track-page__meta h1 {
+    font-size: 1.5rem;
+  }
+ 
+  .track-page__details {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+ 
+  .track-page__details dd {
+    margin-bottom: 12px;
+  }
 }
-
-.track-page__error {
-  padding: 24px;
-  color: #c62828;
-  text-align: center;
-}
-.track-page__owner-link {
-  color: #1976d2;
-  text-decoration: none;
-}
+ 

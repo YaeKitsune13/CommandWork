@@ -8,7 +8,6 @@ export const albumApi = {
   },
   
   get: async (id) => {
-    // При получении одного альбома бэкенд возвращает объект напрямую (AlbumResponseDto)
     return await request(`/albums/${id}`);
   },
 };
