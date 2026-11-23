@@ -39,7 +39,8 @@ export default function Home() {
   const [playlistSaving, setPlaylistSaving] = useState(false);
   const [playlistError, setPlaylistError] = useState('');
 
-  const isStaff = role === 'moderator' || role === 'admin';
+  const isAdmin = role === 'admin';
+  const isModerator = role === 'moderator';
   const getAuthToken = () => token || localStorage.getItem('token');
 
   const loadPlaylists = useCallback(async () => {
@@ -368,7 +369,12 @@ export default function Home() {
       )}
 
       <div className="home__actions">
-        {isStaff && (
+        {isAdmin && (
+          <Link to="/admin" className="home__upload-link" style={{ background: '#c62828' }}>
+            Администратор
+          </Link>
+        )}
+        {isModerator && (
           <Link to="/moderation" className="home__upload-link" style={{ background: '#5e35b1' }}>
             Модерация
           </Link>

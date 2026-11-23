@@ -12,6 +12,8 @@ export default function ModerationPanel() {
   const [complaintFilter, setComplaintFilter] = useState('pending');
   const [analytics, setAnalytics] = useState(null);
   const [counts, setCounts] = useState({ pendingTracks: 0, pendingComplaints: 0 });
+  const [catalogTracks, setCatalogTracks] = useState([]);
+  const [catalogSearch, setCatalogSearch] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -41,7 +43,12 @@ export default function ModerationPanel() {
       } else if (activeTab === 'complaints') {
         const data = await moderatorApi.getComplaints(complaintFilter, 1, 20);
         setComplaints(data?.items || []);
-      } else if (activeTab === 'stats') {
+      }
+      else if (activeTab === 'catalog') {
+        const data = await moderatorApi.searchCatalogTracks(catalogSearch, 1, 20);
+        setCatalogTracks(data?.items || []);
+      }
+      else if (activeTab === 'stats') {
         try {
           const stats = await moderatorApi.getAnalytics();
           setAnalytics(stats);
@@ -60,6 +67,16 @@ export default function ModerationPanel() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+  const handleBlockTrack = async (id) => {
+    const reason = window.prompt('Укажите причину блокировки трека:');
+    if (!reason || !reason.trim()) return;
+    try {
+      await moderatorApi.reviewTrack(id, 'rejected', reason.trim());
+      loadData();
+    } catch (err) {
+      alert('Ошибка блокировки: ' + err.message);
+    }
+  };
 
   const handleApprove = async (id) => {
     if (!window.confirm('Одобрить этот трек?')) return;
@@ -175,6 +192,11 @@ export default function ModerationPanel() {
         >
           Статистика
         </button>
+        <button
+          className={activeTab === 'catalog' ? 'active' : ''}
+          onClick={() => setActiveTab('catalog')}>
+          Каталог
+        </button>
       </div>
 
       {loading && <p className="mod-panel__hint">Загрузка...</p>}
@@ -202,6 +224,49 @@ export default function ModerationPanel() {
                 <button className="btn-reject" onClick={() => handleReject(t.id)}>Отклонить</button>
                 <button className="btn-secondary" onClick={() => handleEditTrack(t)}>Редактировать</button>
                 <button className="btn-delete" onClick={() => handleDeleteTrack(t.id)}>Удалить</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {!loading && activeTab === 'catalog' && (
+        <div className="mod-panel__list">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              loadData();
+            }}
+            style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}
+          >
+            <input
+              type="text"
+              value={catalogSearch}
+              onChange={(e) => setCatalogSearch(e.target.value)}
+              placeholder="Поиск опубликованных треков..."
+              style={{ flex: 1 }}
+            />
+            <button type="submit">Найти</button>
+          </form>
+
+          {catalogTracks.length === 0 && <p className="mod-panel__hint">Треки не найдены</p>}
+          {catalogTracks.map((t) => (
+            <div key={t.id} className="mod-card">
+              <div className="mod-card__info">
+                <strong>{t.name}</strong>
+                <span>
+                  ID: {t.id} | Автор: {t.owner?.nickname || `#${t.owner?.id}`}
+                </span>
+                {t.streamUrl && (
+                  <audio controls src={t.streamUrl} style={{ marginTop: '8px', width: '100%' }} />
+                )}
+              </div>
+              <div className="mod-card__actions">
+                <button className="btn-reject" onClick={() => handleBlockTrack(t.id)}>
+                  Заблокировать
+                </button>
+                <button className="btn-delete" onClick={() => handleDeleteTrack(t.id)}>
+                  Удалить
+                </button>
               </div>
             </div>
           ))}
