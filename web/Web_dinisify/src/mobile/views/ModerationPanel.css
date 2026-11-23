@@ -1,81 +1,399 @@
+/* ================================================================
+   ModerationPanel.css — в стиле Catalog_window.css / Home.css / Auth.css
+   ================================================================ */
+ 
 .mod-panel {
-  padding: 16px 12px 96px;
-  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 960px;
   margin: 0 auto;
+  padding: 32px 40px 40px;
+  box-sizing: border-box;
+  color: #fff;
+  font-family: system-ui, sans-serif;
 }
-
+ 
+/* ---- Верхняя строка: назад + добавить ---- */
+.mod-panel__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+ 
 .mod-panel__back {
-  background: none; border: none; cursor: pointer;
-  color: #1976d2; font-size: 13px; padding: 0; margin-bottom: 12px;
+  padding: 8px 16px;
+  background: transparent;
+  color: #b3b3b3;
+  border: 1px solid #1f1f23;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-
+ 
+.mod-panel__back:hover {
+  background: #1f1f23;
+  color: #fff;
+}
+ 
+.mod-panel__add-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #E5383B;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+ 
+.mod-panel__add-btn:hover {
+  background: #ff7733;
+}
+ 
+/* ---- Заголовок ---- */
+.mod-panel__header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #E5383B;
+}
+ 
 .mod-panel__header h1 {
-  font-size: 20px; margin: 0 0 16px;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
 }
-
+ 
+/* ---- Вкладки ---- */
 .mod-panel__tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #eee;
 }
-
+ 
 .mod-panel__tabs button {
-  padding: 10px 16px;
-  background: none; border: none; border-bottom: 2px solid transparent;
-  cursor: pointer; font-size: 14px; font-weight: 600; color: #666;
+  padding: 8px 18px;
+  background: #141418;
+  color: #b3b3b3;
+  border: 1px solid #1f1f23;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
-
+ 
+.mod-panel__tabs button:hover {
+  color: #fff;
+  border-color: #E5383B;
+}
+ 
 .mod-panel__tabs button.active {
-  color: #1976d2;
-  border-bottom-color: #1976d2;
+  background: #E5383B;
+  color: #fff;
+  border-color: #E5383B;
 }
-
-.mod-panel__list {
+ 
+/* ---- Состояния ---- */
+.mod-panel__hint {
+  margin: 0;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #8a8a8a;
+}
+ 
+.mod-panel__error {
+  margin: 0;
+  font-size: 0.9rem;
+  color: salmon;
+}
+ 
+/* ---- Списки ---- */
+.mod-panel__list,
+.mod-panel__stats {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
-.mod-card {
-  border: 1px solid #e0e0e0;
-  padding: 12px;
-  background: #fafafa;
+ 
+/* ---- Поиск (форма с полем и кнопкой) ----
+   .mod-panel__list > form оставлен для ModerationPanel, где у формы нет класса */
+.mod-panel__search,
+.mod-panel__list > form {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  gap: 8px;
+}
+ 
+.mod-panel__search input,
+.mod-panel__list > form input {
+  flex: 1;
+  min-width: 0;
+}
+ 
+/* ---- Поля ввода и выпадающие списки ---- */
+.mod-panel__filters select,
+.mod-card__select,
+.mod-panel__search input,
+.mod-panel__list > form input {
+  padding: 10px 16px;
+  background: #1a1a1f;
+  border: 1px solid #1f1f23;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+ 
+.mod-panel__filters select:focus,
+.mod-card__select:focus,
+.mod-panel__search input:focus,
+.mod-panel__list > form input:focus {
+  border-color: #E5383B;
+}
+ 
+.mod-panel__filters select option,
+.mod-card__select option {
+  background: #1a1a1f;
+  color: #fff;
+}
+ 
+.mod-panel__search input::placeholder,
+.mod-panel__list > form input::placeholder {
+  color: #8a8a8a;
+}
+ 
+/* Select роли внутри карточки — чуть компактнее */
+.mod-card__select {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+ 
+/* Кнопка «Найти»: у неё либо класс mod-panel__search-btn,
+   либо (в ModerationPanel) вообще нет класса */
+.mod-panel__search-btn,
+.mod-panel__list > form button:not([class]) {
+  padding: 0 24px;
+  height: 42px;
+  background: #E5383B;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+ 
+.mod-panel__search-btn:hover,
+.mod-panel__list > form button:not([class]):hover {
+  background: #ff7733;
+}
+ 
+/* Кнопка «+ Добавить» (btn-approve) в форме — той же высоты, что и «Найти» */
+.mod-panel__search .btn-approve {
+  height: 42px;
+  padding: 0 24px;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+ 
+/* Сырой <pre> вне карточки (аналитика, не-объект) */
+.mod-panel__pre {
+  margin: 0;
+  padding: 16px 20px;
+  max-height: 400px;
+  overflow: auto;
+  background: #141418;
+  border: 1px solid #1f1f23;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: #e5e5e5;
+}
+ 
+/* ---- Карточка ---- */
+.mod-card {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
+  padding: 16px 20px;
+  background: #141418;
+  border: 1px solid #1f1f23;
+  border-left: 3px solid #E5383B;
+  border-radius: 12px;
 }
-
-@media (max-width: 600px) {
-  .mod-card { flex-direction: column; }
-  .mod-card__actions { width: 100%; display: flex; gap: 8px; }
-  .mod-card__actions button { flex: 1; }
-}
-
+ 
 .mod-card__info {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 13px;
-  color: #555;
+  min-width: 0;
 }
-
-.mod-card__info strong { font-size: 15px; color: #000; }
-.mod-card__file { font-family: monospace; font-size: 11px; color: #888; }
-.mod-card__reason { color: #c62828; font-style: italic; margin-top: 4px; }
-.mod-card__status { font-size: 12px; color: #888; }
-
-.btn-approve, .btn-reject {
-  padding: 8px 12px; border: none; border-radius: 6px;
-  cursor: pointer; font-size: 13px; font-weight: 600;
+ 
+.mod-card__info strong {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  overflow-wrap: anywhere;
 }
-
-.btn-approve { background: #ffffff; color: #00ff0d; }
-.btn-approve:hover { background: #ffffff; }
-
-.btn-reject { background: #ffffff; color: #ff0000; }
-.btn-reject:hover { background: #ffffff; }
-
-.mod-panel__hint { color: #888; text-align: center; padding: 24px; }
-.mod-panel__error { color: #c62828; text-align: center; padding: 12px; }
+ 
+.mod-card__info span {
+  font-size: 0.85rem;
+  color: #8a8a8a;
+  overflow-wrap: anywhere;
+}
+ 
+.mod-card__info audio {
+  width: 100%;
+  color-scheme: dark;
+}
+ 
+.mod-card__info pre {
+  margin: 8px 0 0;
+  padding: 12px 16px;
+  max-height: 320px;
+  overflow: auto;
+  background: #1a1a1f;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #e5e5e5;
+  scrollbar-width: thin;
+  scrollbar-color: #1f1f23 transparent;
+}
+ 
+.mod-card__info b {
+  font-weight: 600;
+  color: #e5e5e5;
+}
+ 
+.mod-card__reason {
+  color: #e5e5e5 !important;
+}
+ 
+.mod-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+ 
+.mod-card__status {
+  margin-left: auto;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  color: #b3b3b3;
+  background: #1a1a1f;
+  border: 1px solid #1f1f23;
+  border-radius: 999px;
+}
+ 
+/* ---- Кнопки действий ---- */
+.btn-approve,
+.btn-reject,
+.btn-secondary,
+.btn-delete {
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+ 
+/* Одобрить / решено */
+.btn-approve {
+  background: transparent;
+  color: #7ddc9a;
+  border: 1px solid #2e6b44;
+}
+ 
+.btn-approve:hover {
+  background: #2e6b44;
+  color: #fff;
+}
+ 
+/* Отклонить / заблокировать */
+.btn-reject {
+  background: #E5383B;
+  color: #fff;
+  border: 1px solid #E5383B;
+}
+ 
+.btn-reject:hover {
+  background: #ff7733;
+  border-color: #ff7733;
+}
+ 
+/* Редактировать */
+.btn-secondary {
+  background: transparent;
+  color: #b3b3b3;
+  border: 1px solid #1f1f23;
+}
+ 
+.btn-secondary:hover {
+  background: #1f1f23;
+  color: #fff;
+}
+ 
+/* Удалить */
+.btn-delete {
+  background: transparent;
+  color: salmon;
+  border: 1px solid #850000;
+}
+ 
+.btn-delete:hover {
+  background: #850000;
+  color: #fff;
+}
+ 
+.mod-card__select:focus-visible,
+.mod-panel__back:focus-visible,
+.mod-panel__add-btn:focus-visible,
+.mod-panel__tabs button:focus-visible,
+.btn-approve:focus-visible,
+.btn-reject:focus-visible,
+.btn-secondary:focus-visible,
+.btn-delete:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+@media (min-width: 768px) {
+  .mod-card {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+ 
+  .mod-card__info {
+    flex: 1;
+  }
+ 
+  .mod-card__actions {
+    flex-shrink: 0;
+    max-width: 320px;
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 600px) {
+  .mod-panel {
+    padding: 20px 16px 32px;
+  }
+ 
+  .mod-panel__header h1 {
+    font-size: 1.4rem;
+  }
+}
+ 

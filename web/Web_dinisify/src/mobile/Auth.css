@@ -1,0 +1,140 @@
+ 
+.auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  font-family: system-ui, sans-serif;
+  color: #fff;
+}
+ 
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 28px;
+  background: #141418;
+  border: 1px solid #1f1f23;
+  border-top: 3px solid #E5383B;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+ 
+.auth__title {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+ 
+.auth__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+ 
+.auth__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  background: #1a1a1f;
+  border: 1px solid #1f1f23;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+ 
+.auth__input::placeholder {
+  color: #8a8a8a;
+}
+ 
+.auth__input:focus {
+  border-color: #E5383B;
+}
+ 
+.auth__input--invalid {
+  border-color: salmon;
+}
+ 
+.auth__field-error {
+  padding: 0 16px;
+  font-size: 0.75rem;
+  color: salmon;
+}
+ 
+.auth__btn {
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+ 
+.auth__btn--primary {
+  background: #E5383B;
+  color: #fff;
+  border: none;
+}
+ 
+.auth__btn--primary:hover:not(:disabled) {
+  background: #ff7733;
+}
+ 
+.auth__btn--secondary {
+  background: transparent;
+  color: #E5383B;
+  border: 1px solid #E5383B;
+}
+ 
+.auth__btn--secondary:hover:not(:disabled) {
+  background: #E5383B;
+  color: #fff;
+}
+ 
+.auth__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+ 
+.auth__btn:focus-visible,
+.auth__link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+ 
+.auth__error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: salmon;
+}
+ 
+.auth__links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #1f1f23;
+}
+ 
+.auth__link {
+  font-size: 0.85rem;
+  color: #b3b3b3;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+ 
+.auth__link:hover {
+  color: #E5383B;
+}
+ 

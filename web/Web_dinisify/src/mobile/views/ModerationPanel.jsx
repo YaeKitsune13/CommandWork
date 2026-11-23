@@ -5,7 +5,7 @@ import './ModerationPanel.css';
 
 export default function ModerationPanel() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('tracks'); // 'tracks' | 'complaints' | 'stats'
+  const [activeTab, setActiveTab] = useState('tracks'); 
 
   const [tracks, setTracks] = useState([]);
   const [complaints, setComplaints] = useState([]);
@@ -29,7 +29,6 @@ export default function ModerationPanel() {
         pendingComplaints: cRes.status === 'fulfilled' ? (cRes.value?.total ?? cRes.value?.items?.length ?? 0) : 0,
       });
     } catch {
-      // не критично для основного экрана
     }
   }, []);
 

@@ -1,5 +1,4 @@
 import { Link, useNavigate } from 'react-router-dom';
-// ВАЖНО: проверьте, что файл называется useAuth.js, а не auth.js
 import { useAuth } from '../shared/hooks/useAuth';
 import { useDiscovery } from '../shared/hooks/useDiscovery';
 import TrackCard from '.././shared/components/TrackCard';
@@ -18,12 +17,10 @@ export default function Home() {
   const navigate = useNavigate();
   const { albums, loading: albumsLoading, error: albumsError, reload: reloadAlbums } = useAlbums();
 
-  // Плейлисты пользователя (или публичные для гостя)
   const [playlists, setPlaylists] = useState([]);
   const [playlistsLoading, setPlaylistsLoading] = useState(false);
   const [playlistsError, setPlaylistsError] = useState(null);
 
-  // Состояние создания альбома
   const [showAlbumModal, setShowAlbumModal] = useState(false);
   const [albumName, setAlbumName] = useState('');
   const [releaseDate, setReleaseDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -31,7 +28,6 @@ export default function Home() {
   const [albumSaving, setAlbumSaving] = useState(false);
   const [albumError, setAlbumError] = useState('');
 
-  // Состояние создания плейлиста
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [playlistName, setPlaylistName] = useState('');
   const [playlistDesc, setPlaylistDesc] = useState('');
@@ -70,6 +66,10 @@ export default function Home() {
     const query = search.trim();
     if (!query) return;
     navigate(`/search?q=${encodeURIComponent(query)}`);
+  };
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
   };
 
   const handleCreateAlbum = async (e) => {
@@ -382,7 +382,7 @@ export default function Home() {
         <Link to="/settings" className="home__upload-link" style={{ background: '#455a64' }}>
           Настройки
         </Link>
-        <button onClick={logout}>Выйти</button>
+        <button onClick={handleLogout}>Выйти</button>
       </div>
     </div>
   );

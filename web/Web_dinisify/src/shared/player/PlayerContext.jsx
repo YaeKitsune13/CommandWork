@@ -5,7 +5,7 @@ const PlayerContext = createContext(null);
 
 export function PlayerProvider({ children }) {
   const audioRef = useRef(null);
-  const [current, setCurrent] = useState(null); // { id, name, artistName, image }
+  const [current, setCurrent] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);

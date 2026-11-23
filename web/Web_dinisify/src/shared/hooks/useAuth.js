@@ -6,7 +6,6 @@ const TOKEN_KEY = 'token';
 const ROLE_KEY = 'role';
 
 export function useAuth() {
-  // --- 1. ОБЪЯВЛЕНИЕ ПЕРЕМЕННЫХ (здесь была ваша ошибка) ---
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
   const [role, setRole] = useState(
     () => localStorage.getItem(ROLE_KEY) || (localStorage.getItem(TOKEN_KEY) ? 'user' : 'guest')
@@ -36,7 +35,7 @@ export function useAuth() {
 
   useEffect(() => {
     if (token) fetchMe(token);
-  }, [token, fetchMe]); // Добавили зависимости, чтобы избежать багов
+  }, [token, fetchMe]);
 
   const login = async (email, password) => {
     setLoading(true);
@@ -50,7 +49,7 @@ export function useAuth() {
       if (!response.ok) throw new Error('Неверный email или пароль');
 
       const data = await response.json();
-      const newToken = data.token; // Бэкенд отдает { "token": "..." }
+      const newToken = data.token; 
       
       if (!newToken) throw new Error('Токен не получен от сервера');
 
@@ -79,7 +78,7 @@ export function useAuth() {
       if (!res.ok) throw new Error('Не удалось войти как гость');
       
       const data = await res.json();
-      const newToken = data?.token || data; // Бэкенд может вернуть строку или объект
+      const newToken = data?.token || data;
       if (!newToken) throw new Error('Токен не получен');
 
       localStorage.setItem(TOKEN_KEY, newToken);
@@ -103,7 +102,7 @@ export function useAuth() {
       const res = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, nickname }), // Добавили nickname по спецификации
+        body: JSON.stringify({ email, password, nickname }),
       });
       if (res.status === 409) throw new Error('Email или никнейм уже занят');
       if (!res.ok) throw new Error('Не удалось зарегистрироваться');
@@ -129,13 +128,14 @@ export function useAuth() {
     setToken(null);
     setRole('guest');
     setUser(null);
+    
   };
 
   return {
     token,
     role,
     user,
-    isAuthenticated: !!token, // <--- ТЕПЕРЬ ЗДЕСЬ ЕСТЬ
+    isAuthenticated: !!token,
     isGuest: role === 'guest' || !token,
     isModerator: role === 'moderator' || role === 'admin',
     isAdmin: role === 'admin',

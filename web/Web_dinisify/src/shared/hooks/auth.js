@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { API_URL } from '../api/client'; // берём единый URL ('/api')
+import { API_URL } from '../api/client';
 
 const TOKEN_KEY = 'token';
 const ROLE_KEY = 'role';
@@ -40,7 +40,7 @@ export function useAuth() {
 
   useEffect(() => {
     if (token) fetchMe(token);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const login = async (email, password) => {
     setLoading(true);
