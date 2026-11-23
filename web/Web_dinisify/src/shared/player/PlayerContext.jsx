@@ -55,7 +55,7 @@ export function PlayerProvider({ children }) {
     setCurrentTime(0);
     setDuration(0);
 
-    audio.src = `${API_URL}/api/music/sound?id=${id}`;
+    audio.src = `${API_URL}/music/sound?id=${id}`;
     try {
       await audio.play();
       setIsPlaying(true);

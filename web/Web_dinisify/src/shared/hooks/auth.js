@@ -1,7 +1,6 @@
-// src/hooks/useAuth.js
 import { useState, useEffect, useCallback } from 'react';
+import { API_URL } from '../api/client'; // берём единый URL ('/api')
 
-const API_URL = 'http://127.0.0.1:5000/api';
 const TOKEN_KEY = 'token';
 const ROLE_KEY = 'role';
 
@@ -11,12 +10,16 @@ export function useAuth() {
     () => localStorage.getItem(ROLE_KEY) || (localStorage.getItem(TOKEN_KEY) ? 'user' : 'guest')
   );
   const [user, setUser] = useState(null);
+  const [initializing, setInitializing] = useState(() => Boolean(localStorage.getItem(TOKEN_KEY)));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchMe = useCallback(async (tk) => {
     const t = tk || token;
-    if (!t) return null;
+    if (!t) {
+      setInitializing(false);
+      return null;
+    }
     try {
       const res = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${t}` },
@@ -30,11 +33,14 @@ export function useAuth() {
       return data;
     } catch {
       return null;
+    } finally {
+      setInitializing(false);
     }
   }, [token]);
+
   useEffect(() => {
     if (token) fetchMe(token);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const login = async (email, password) => {
     setLoading(true);

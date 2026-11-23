@@ -5,7 +5,8 @@ import { userApi } from '../../shared/api/userApi';
 import './ProfileSettings.css';
 
 export default function ProfileSettings() {
-  const { userId, token } = useAuth();
+  const { user, isGuest } = useAuth();
+  const userId = user?.id;
   const navigate = useNavigate();
   
   const [form, setForm] = useState({ nickname: '', image: '', privacy: 'public' });
