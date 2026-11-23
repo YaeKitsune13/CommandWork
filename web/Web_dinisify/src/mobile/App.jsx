@@ -10,6 +10,7 @@ import Album from './views/Album';
 import TrackPage from './views/TrackPage';
 import UploadTrack from './views/UploadTrack';
 import Profile from './views/Profile';
+import AdminPanel from './views/AdminPanel';
 import ModerationPanel from './views/ModerationPanel';
 import ProfileSettings from './views/ProfileSettings';
 
@@ -58,6 +59,14 @@ export default function MobileApp() {
             element={
               <RequireRole allowedRoles={['moderator', 'admin']}>
                 <ModerationPanel />
+              </RequireRole>
+            }
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <RequireRole allowedRoles={['admin']}>
+                <AdminPanel />
               </RequireRole>
             }
           />

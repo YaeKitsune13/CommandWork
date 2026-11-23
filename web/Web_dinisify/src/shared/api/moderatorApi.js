@@ -53,4 +53,13 @@ export const moderatorApi = {
 
   // В справочнике указан как Admin; оставим хелпер для статистики, если бэк разрешит
   getAnalytics: () => request('/admin/analytics'),
+  
+  searchCatalogTracks: (search = '', page = 1, pageSize = 20) => {
+    const params = new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+    if (search.trim()) params.append('search', search.trim());
+    return request(`/tracks?${params.toString()}`);
+  },
 };
