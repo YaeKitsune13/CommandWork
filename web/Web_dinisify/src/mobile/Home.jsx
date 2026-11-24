@@ -69,6 +69,7 @@ export default function Home() {
   };
   const handleLogout = () => {
     logout();
+    window.dispatchEvent(new Event('auth:logout'));
     navigate('/login', { replace: true });
   };
 

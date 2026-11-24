@@ -20,6 +20,7 @@ export function PlayerProvider({ children }) {
     const onMeta = () => setDuration(audio.duration || 0);
     const onEnd = () => setIsPlaying(false);
     const onErr = () => {
+      if (!audio.getAttribute('src')) return;
       setError('Не удалось загрузить трек');
       setIsPlaying(false);
     };
@@ -37,6 +38,28 @@ export function PlayerProvider({ children }) {
       audio.removeEventListener('error', onErr);
     };
   }, []);
+
+  const stop = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
+    setIsPlaying(false);
+    setCurrent(null);
+    setCurrentTime(0);
+    setDuration(0);
+    setError(null);
+  }, []);
+
+  useEffect(() => {
+    const handleAuthLogout = () => {
+      stop();
+    };
+
+    window.addEventListener('auth:logout', handleAuthLogout);
+    return () => window.removeEventListener('auth:logout', handleAuthLogout);
+  }, [stop]);
 
   const playTrack = useCallback(async (track) => {
     const id = track.id ?? track.trackId;
@@ -85,17 +108,6 @@ export function PlayerProvider({ children }) {
     if (!audio) return;
     audio.currentTime = time;
     setCurrentTime(time);
-  }, []);
-
-  const stop = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    audio.src = '';
-    setIsPlaying(false);
-    setCurrent(null);
-    setCurrentTime(0);
-    setDuration(0);
   }, []);
 
   const value = {
