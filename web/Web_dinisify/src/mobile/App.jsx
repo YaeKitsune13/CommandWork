@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../shared/hooks/useAuth';
 import RequireAuth from '../shared/components/RequireAuth';
 import RequireRole from '../shared/components/RequireRole';
 import Home from './Home';
@@ -15,9 +16,16 @@ import ModerationPanel from './views/ModerationPanel';
 import ProfileSettings from './views/ProfileSettings';
 
 export default function MobileApp() {
+  const { pathname } = useLocation();
+  const { token, isGuest, user } = useAuth();
+
+  const isAuthRoute = pathname === '/login' || pathname === '/register';
+  const isAuthenticated = Boolean(token || user) && !isGuest;
+  const showPlayer = !isAuthRoute && isAuthenticated;
+
   return (
     <>
-      <div style={{ paddingBottom: '80px' }}>
+      <div style={{ paddingBottom: showPlayer ? '80px' : '0' }}>
         <Routes>
           {/*публичные*/}
           <Route path="/login" element={<LoginForm />} />
@@ -76,7 +84,7 @@ export default function MobileApp() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
-      <PlayerBar />
+      {showPlayer && <PlayerBar />}
     </>
   );
 }
