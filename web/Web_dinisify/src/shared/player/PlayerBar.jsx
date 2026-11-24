@@ -2,7 +2,7 @@ import { usePlayer } from './PlayerContext';
 import './PlayerBar.css';
 
 export default function PlayerBar() {
-  const { current, isPlaying, currentTime, duration, toggle, seek } = usePlayer();
+  const { current, isPlaying, currentTime, duration, error, toggle, seek } = usePlayer();
 
   if (!current) return null;
 
@@ -10,7 +10,9 @@ export default function PlayerBar() {
     <div className="player-bar">
       <div className="player-bar__info">
         <div className="player-bar__title">{current.name}</div>
-        <div className="player-bar__artist">{current.artistName}</div>
+        <div className="player-bar__artist">
+          {error ? error : current.artistName}
+        </div>
       </div>
 
       <button className="player-bar__btn" onClick={toggle}>

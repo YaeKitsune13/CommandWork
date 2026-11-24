@@ -7,7 +7,6 @@
   box-sizing: border-box;
 }
 
-/* ---- Header ---- */
 .home__header {
   display: flex;
   align-items: baseline;
@@ -111,7 +110,6 @@
   font-style: italic;
 }
 
-/* ---- Album grid ---- */
 .home__album-grid {
   display: flex;
   gap: 16px;
