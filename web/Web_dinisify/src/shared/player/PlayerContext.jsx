@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { API_URL } from '../api/client';
+import { useAuth } from '../hooks/useAuth';
 
 const PlayerContext = createContext(null);
 
@@ -10,6 +11,9 @@ export function PlayerProvider({ children }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState(null);
+
+  const { token, isGuest } = useAuth();
+  const prevAuthRef = useRef(Boolean(token) && !isGuest);
 
   useEffect(() => {
     const audio = new Audio();
@@ -53,13 +57,12 @@ export function PlayerProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const handleAuthLogout = () => {
+    const isLoggedIn = Boolean(token) && !isGuest;
+    if (prevAuthRef.current && !isLoggedIn) {
       stop();
-    };
-
-    window.addEventListener('auth:logout', handleAuthLogout);
-    return () => window.removeEventListener('auth:logout', handleAuthLogout);
-  }, [stop]);
+    }
+    prevAuthRef.current = isLoggedIn;
+  }, [token, isGuest, stop]);
 
   const playTrack = useCallback(async (track) => {
     const id = track.id ?? track.trackId;
